@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Klepach.Core.VHDV.Cli": {
+      "commandName": "Project",
+      "commandLineArgs": "scandrive C"
+    }
+  }
+}
