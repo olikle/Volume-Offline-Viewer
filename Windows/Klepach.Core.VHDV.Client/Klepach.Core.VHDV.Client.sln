@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klepach.Core.VHDV.Client", "Klepach.Core.VHDV.Client.csproj", "{6D503BA6-985F-413F-B721-33DD3B6C3212}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klepach.Core.VHDV.Client", "Klepach.Core.VHDV.Client.csproj", "{F170C016-3A47-43A1-ABD5-9EEFD89FD861}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6D503BA6-985F-413F-B721-33DD3B6C3212}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6D503BA6-985F-413F-B721-33DD3B6C3212}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6D503BA6-985F-413F-B721-33DD3B6C3212}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6D503BA6-985F-413F-B721-33DD3B6C3212}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F170C016-3A47-43A1-ABD5-9EEFD89FD861}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F170C016-3A47-43A1-ABD5-9EEFD89FD861}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F170C016-3A47-43A1-ABD5-9EEFD89FD861}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F170C016-3A47-43A1-ABD5-9EEFD89FD861}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {F12ED6D7-F20C-46CF-9411-D88C30B0C6AA}
+		SolutionGuid = {006A1071-A1F4-40D7-9232-EDB8C31F9963}
 	EndGlobalSection
 EndGlobal
