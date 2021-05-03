@@ -9,7 +9,7 @@ namespace Klepach.Core.VHDV.Cli
     class VOVPartition
     {
         public int Id { get; set; }
-        public Dictionary<string, object> RawRroperties { get; set; }
+        //public Dictionary<string, object> RawRroperties { get; set; }
         public string DeviceID { get; set; }
         public string Caption { get; set; }
         public string Description { get; set; }

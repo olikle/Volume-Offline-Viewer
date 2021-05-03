@@ -20,13 +20,13 @@ dotnet tool list --global
 dotnet tool install dotnet-ef --global
 
 ## add changes
-dotnet ef migrations add AddFile
+dotnet ef migrations add AddDiskPartitionAndFile
 ## remove the last change
 dotnet ef migrations remove 
 
 ## list the structure
 dotnet ef dbcontext list
-dotnet ef dbcontext list -p "Klepach.Core.VHDV.Cli.csproj"
+dotnet ef dbcontext list
 
 
 ## generate table

@@ -12,6 +12,8 @@ namespace Klepach.Core.VHDV.Cli
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var connString = System.Configuration.ConfigurationManager.AppSettings["DBConnection"];
+            if (string.IsNullOrEmpty(connString))
+                connString = @"Data Source=C:\_Enwicklung\_GitHub\Volume-Offline-Viewer\Windows\Klepach.Core.VHDV.Cli\vovData.db";
 
             optionsBuilder.UseSqlite(connString);
             //  .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
