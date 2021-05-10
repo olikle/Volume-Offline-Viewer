@@ -21,5 +21,6 @@ namespace Klepach.Core.VHDV.Cli
             base.OnConfiguring(optionsBuilder);
         }
         public DbSet<VOVFile> vOVFiles { get; set; }
+        public DbSet<VOVPartition> vOVPartition { get; set; }
     }
 }

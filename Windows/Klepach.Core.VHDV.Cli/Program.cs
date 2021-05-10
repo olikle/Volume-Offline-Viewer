@@ -8,6 +8,8 @@ namespace Klepach.Core.VHDV.Cli
     {
         static void Main(string[] args)
         {
+            AppDbContext db = new AppDbContext();
+
             string command = "listvolumes";
             if (args.Length > 0)
                 command = args[0];
@@ -23,7 +25,11 @@ namespace Klepach.Core.VHDV.Cli
                 if (args.Length > 2)
                     volumeId = args[2];
 
-                var partitionInfo = HardDriveInfo.GetPartitionInfo(driveLetter);
+                Inventory inventory = new Inventory(db);
+                inventory.ScanDrive(driveLetter);
+
+
+
                 /*
                 // add drive info to database
                 var hdNo = HardDriveInfo.GetDiskIDFromDriveLetter(driveLetter);

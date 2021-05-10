@@ -2,17 +2,54 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace Klepach.Core.VHDV.Cli
 {
     class Inventory
     {
-        string _driveLetter = "";
-        public Inventory(string driveLetter)
+        AppDbContext _db;
+
+        public Inventory(AppDbContext db)
         {
-            _driveLetter = driveLetter;
+            _db = db;
         }
+
+        public void ScanDrive(string driveLetter)
+        {
+            var partitionInfo = HardDriveInfo.GetPartitionInfo(driveLetter);
+            var id = partitionInfo.VolumeSerialNumber;
+
+            VOVPartition partitionRecord = _db.vOVPartition.AsNoTracking().Where(p => p.VolumeSerialNumber == partitionInfo.VolumeSerialNumber).FirstOrDefault();
+            var newRecord = (partitionRecord == null);
+            if (newRecord)
+            {
+                partitionRecord = new VOVPartition();
+                partitionRecord.VolumeSerialNumber = partitionInfo.VolumeSerialNumber;
+            }
+            partitionRecord.Caption = partitionInfo.Caption;
+            partitionRecord.Description = partitionInfo.Description;
+            partitionRecord.DeviceID = partitionInfo.DeviceID;
+            partitionRecord.DriveType = partitionInfo.DriveType;
+            partitionRecord.FileSystem = partitionInfo.FileSystem;
+            partitionRecord.MediaType = partitionInfo.MediaType;
+            partitionRecord.Name = partitionInfo.Name;
+            partitionRecord.SystemName = partitionInfo.SystemName;
+            partitionRecord.VolumeDirty = partitionInfo.VolumeDirty;
+            partitionRecord.VolumeName = partitionInfo.VolumeName;
+
+            if (newRecord)
+                _db.vOVPartition.Add(partitionRecord);
+            else
+                _db.vOVPartition.Update(partitionRecord);
+            _db.SaveChanges();
+        }
+
+
+
+        string _driveLetter = "";
         public void GetDriveInfo()
         {
             System.IO.DriveInfo di = new System.IO.DriveInfo($"{_driveLetter}\\");
