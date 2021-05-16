@@ -149,7 +149,7 @@ namespace Klepach.Core.VHDV.Db
         {
             dirLevel++;
             
-            if (dirLevel > 2) return;
+            if (dirLevel > 1) return;
 
             var driveLetter = path.Substring(0, 1);
             var items = Directory.EnumerateDirectories($"{path}", "*.*", SearchOption.TopDirectoryOnly);
@@ -198,6 +198,9 @@ namespace Klepach.Core.VHDV.Db
                     else
                         _db.FileSystemItems.Update(dirRecord);
                 }
+                // add files from root
+                if (path.Substring(2) == "\\")
+                    AddFiles(path, partitionId, dirLevel);
             }
             catch (Exception Ex)
             {
