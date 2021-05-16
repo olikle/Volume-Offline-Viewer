@@ -149,7 +149,7 @@ namespace Klepach.Core.VHDV.Db
         {
             dirLevel++;
             
-            if (dirLevel > 1) return;
+            if (dirLevel > 3) return;
 
             var driveLetter = path.Substring(0, 1);
             var items = Directory.EnumerateDirectories($"{path}", "*.*", SearchOption.TopDirectoryOnly);

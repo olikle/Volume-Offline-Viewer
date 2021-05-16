@@ -30,17 +30,22 @@ namespace Klepach.Core.VHDV.Client
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.tsbInfo = new System.Windows.Forms.ToolStripButton();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.cmbPartitions = new System.Windows.Forms.ComboBox();
             this.tvFolder = new System.Windows.Forms.TreeView();
-            this.iconImageList = new System.Windows.Forms.ImageList(this.components);
+            this.iconSmallImageList = new System.Windows.Forms.ImageList(this.components);
             this.lvFolderAndFiles = new System.Windows.Forms.ListView();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
+            this.clhName = new System.Windows.Forms.ColumnHeader();
+            this.clhLastModifiered = new System.Windows.Forms.ColumnHeader();
+            this.clhType = new System.Windows.Forms.ColumnHeader();
+            this.clhSize = new System.Windows.Forms.ColumnHeader();
+            this.iconLargeImageList = new System.Windows.Forms.ImageList(this.components);
+            this.clhLast = new System.Windows.Forms.ColumnHeader();
+            this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -57,11 +62,24 @@ namespace Klepach.Core.VHDV.Client
             // 
             // toolStrip1
             // 
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsbInfo});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
             this.toolStrip1.Size = new System.Drawing.Size(805, 25);
             this.toolStrip1.TabIndex = 1;
             this.toolStrip1.Text = "toolStrip1";
+            // 
+            // tsbInfo
+            // 
+            this.tsbInfo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbInfo.Image = ((System.Drawing.Image)(resources.GetObject("tsbInfo.Image")));
+            this.tsbInfo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbInfo.Name = "tsbInfo";
+            this.tsbInfo.Size = new System.Drawing.Size(23, 22);
+            this.tsbInfo.Text = "&New";
+            this.tsbInfo.ToolTipText = "Partition Info";
             // 
             // splitContainer1
             // 
@@ -89,7 +107,7 @@ namespace Klepach.Core.VHDV.Client
             this.cmbPartitions.FormattingEnabled = true;
             this.cmbPartitions.Location = new System.Drawing.Point(4, 4);
             this.cmbPartitions.Name = "cmbPartitions";
-            this.cmbPartitions.Size = new System.Drawing.Size(260, 23);
+            this.cmbPartitions.Size = new System.Drawing.Size(259, 23);
             this.cmbPartitions.TabIndex = 1;
             this.cmbPartitions.SelectedIndexChanged += new System.EventHandler(this.cmbPartitions_SelectedIndexChanged);
             // 
@@ -99,19 +117,25 @@ namespace Klepach.Core.VHDV.Client
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tvFolder.ImageIndex = 0;
-            this.tvFolder.ImageList = this.iconImageList;
+            this.tvFolder.ImageList = this.iconSmallImageList;
             this.tvFolder.Location = new System.Drawing.Point(3, 33);
             this.tvFolder.Name = "tvFolder";
             this.tvFolder.SelectedImageIndex = 0;
             this.tvFolder.Size = new System.Drawing.Size(260, 367);
             this.tvFolder.TabIndex = 0;
+            this.tvFolder.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.tvFolder_BeforeExpand);
             this.tvFolder.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvFolder_AfterSelect);
             // 
-            // iconImageList
+            // iconSmallImageList
             // 
-            this.iconImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
-            this.iconImageList.ImageSize = new System.Drawing.Size(16, 16);
-            this.iconImageList.TransparentColor = System.Drawing.Color.Transparent;
+            this.iconSmallImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
+            this.iconSmallImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("iconSmallImageList.ImageStream")));
+            this.iconSmallImageList.TransparentColor = System.Drawing.Color.Transparent;
+            this.iconSmallImageList.Images.SetKeyName(0, "document");
+            this.iconSmallImageList.Images.SetKeyName(1, "drive-harddisk");
+            this.iconSmallImageList.Images.SetKeyName(2, "drive-removable-media");
+            this.iconSmallImageList.Images.SetKeyName(3, "folder");
+            this.iconSmallImageList.Images.SetKeyName(4, "Info");
             // 
             // lvFolderAndFiles
             // 
@@ -119,34 +143,51 @@ namespace Klepach.Core.VHDV.Client
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lvFolderAndFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3,
-            this.columnHeader4});
+            this.clhName,
+            this.clhLastModifiered,
+            this.clhType,
+            this.clhSize,
+            this.clhLast});
             this.lvFolderAndFiles.HideSelection = false;
+            this.lvFolderAndFiles.LargeImageList = this.iconLargeImageList;
             this.lvFolderAndFiles.Location = new System.Drawing.Point(3, 4);
             this.lvFolderAndFiles.Name = "lvFolderAndFiles";
-            this.lvFolderAndFiles.Size = new System.Drawing.Size(527, 399);
-            this.lvFolderAndFiles.SmallImageList = this.iconImageList;
+            this.lvFolderAndFiles.Size = new System.Drawing.Size(527, 396);
+            this.lvFolderAndFiles.SmallImageList = this.iconSmallImageList;
             this.lvFolderAndFiles.TabIndex = 0;
             this.lvFolderAndFiles.UseCompatibleStateImageBehavior = false;
             this.lvFolderAndFiles.View = System.Windows.Forms.View.Details;
             // 
-            // columnHeader1
+            // clhName
             // 
-            this.columnHeader1.Text = "Name";
+            this.clhName.Text = "Name";
             // 
-            // columnHeader2
+            // clhLastModifiered
             // 
-            this.columnHeader2.Text = "Type";
+            this.clhLastModifiered.DisplayIndex = 2;
+            this.clhLastModifiered.Text = "LastModifiered";
             // 
-            // columnHeader3
+            // clhType
             // 
-            this.columnHeader3.Text = "LastModifiered";
+            this.clhType.DisplayIndex = 1;
+            this.clhType.Text = "Type";
             // 
-            // columnHeader4
+            // clhSize
             // 
-            this.columnHeader4.Text = "Size";
+            this.clhSize.Text = "Size";
+            this.clhSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // iconLargeImageList
+            // 
+            this.iconLargeImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth24Bit;
+            this.iconLargeImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("iconLargeImageList.ImageStream")));
+            this.iconLargeImageList.TransparentColor = System.Drawing.Color.Transparent;
+            this.iconLargeImageList.Images.SetKeyName(0, "folder");
+            this.iconLargeImageList.Images.SetKeyName(1, "document");
+            // 
+            // clhLast
+            // 
+            this.clhLast.Text = "";
             // 
             // Main
             // 
@@ -156,9 +197,12 @@ namespace Klepach.Core.VHDV.Client
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.statusStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Main";
             this.Text = "Volume Offline Viewer";
             this.Load += new System.EventHandler(this.Main_Load);
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -176,11 +220,14 @@ namespace Klepach.Core.VHDV.Client
         private System.Windows.Forms.TreeView tvFolder;
         private System.Windows.Forms.ListView lvFolderAndFiles;
         private System.Windows.Forms.ComboBox cmbPartitions;
-        private System.Windows.Forms.ImageList iconImageList;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
-        private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.ColumnHeader columnHeader4;
+        private System.Windows.Forms.ImageList iconLargeImageList;
+        private System.Windows.Forms.ColumnHeader clhName;
+        private System.Windows.Forms.ImageList iconSmallImageList;
+        private System.Windows.Forms.ColumnHeader clhLastModifiered;
+        private System.Windows.Forms.ColumnHeader clhSize;
+        private System.Windows.Forms.ColumnHeader clhType;
+        private System.Windows.Forms.ToolStripButton tsbInfo;
+        private System.Windows.Forms.ColumnHeader clhLast;
     }
 }
 

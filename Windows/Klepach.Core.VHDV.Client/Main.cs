@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,9 +25,6 @@ namespace Klepach.Core.VHDV.Client
             db = new AppDbContext();
 
             InitializeComponent();
-
-            iconImageList.Images.Add("dir", new Icon(SystemIcons.Exclamation, 40, 40));
-            iconImageList.Images.Add("file", new Icon(SystemIcons.Error, 40, 40));
         }
 
         #region Form
@@ -56,7 +54,7 @@ namespace Klepach.Core.VHDV.Client
         /// Loads the next level.
         /// </summary>
         /// <param name="selectedNode">The selected node.</param>
-        private void LoadNextLevel(TreeNode selectedNode)
+        private void LoadLevel(TreeNode selectedNode)
         {
             var path = "\\";
             if (selectedNode != null)
@@ -73,6 +71,7 @@ namespace Klepach.Core.VHDV.Client
                 treeNode.Text = dirRecord.Name;
                 treeNode.Tag = dirRecord.Name;
                 treeNode.ImageKey = "folder";
+                treeNode.SelectedImageKey = "folder";
                 if (selectedNode == null)
                 {
                     treeNode.Name = dirRecord.Path + dirRecord.Name;
@@ -83,6 +82,8 @@ namespace Klepach.Core.VHDV.Client
                     treeNode.Name = dirRecord.Path + "\\" + dirRecord.Name;
                     selectedNode.Nodes.Add(treeNode);
                 }
+                if (path == "\\")
+                    LoadLevel(treeNode);
             }
         }
         /// <summary>
@@ -101,19 +102,33 @@ namespace Klepach.Core.VHDV.Client
                 .ToList();
 
             lvFolderAndFiles.Items.Clear();
-
+            var itemType = "";
             foreach (var dirRecord in dirRecords)
             {
                 ListViewItem.ListViewSubItem[] subItems;
                 ListViewItem item = null;
 
                 item = new ListViewItem(dirRecord.Name, 0);
+                itemType = dirRecord.Type;
+                var itemSize = dirRecord.Size.ToString() + " B";
+                if (dirRecord.Size > 1024)
+                    itemSize = (dirRecord.Size / 1024).ToString("###,###,###") + " KB";
+
+                if (dirRecord.Type == "dir")
+                {
+                    item.ImageKey = "folder";
+                }
+                else
+                {
+                    item.ImageKey = "document";
+                    itemType = Path.GetExtension(dirRecord.Name).Substring(1);
+                }
                 subItems = new ListViewItem.ListViewSubItem[]
-                    {
-                        new ListViewItem.ListViewSubItem(item, dirRecord.Type),
-                        new ListViewItem.ListViewSubItem(item, dirRecord.Size.ToString()),
-                        new ListViewItem.ListViewSubItem(item, dirRecord.LastModifiered.ToShortDateString())
-                    };
+                {
+                    new ListViewItem.ListViewSubItem(item, dirRecord.LastModifiered.ToShortDateString()),
+                    new ListViewItem.ListViewSubItem(item, itemType),
+                    new ListViewItem.ListViewSubItem(item, dirRecord.Type == "dir" ? "" : itemSize)
+                };
                 item.SubItems.AddRange(subItems);
                 lvFolderAndFiles.Items.Add(item);
 
@@ -134,7 +149,7 @@ namespace Klepach.Core.VHDV.Client
                 return;
             var partition = ((VOVPartition)cmbPartitions.SelectedItem);
             _currentPartitionId = partition.Id;
-            LoadNextLevel(null);
+            LoadLevel(null);
             LoadCurrentLevel(null);
         }
         #endregion
@@ -147,8 +162,19 @@ namespace Klepach.Core.VHDV.Client
         private void tvFolder_AfterSelect(object sender, TreeViewEventArgs e)
         {
             var selectedNode = e.Node;
-            if (selectedNode.Nodes.Count == 0)
-                LoadNextLevel(selectedNode);
+            LoadCurrentLevel(selectedNode);
+        }
+        /// <summary>
+        /// Handles the BeforeExpand event of the tvFolder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="TreeViewCancelEventArgs"/> instance containing the event data.</param>
+        private void tvFolder_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        {
+            var selectedNode = e.Node;
+            // load next Level
+            foreach (TreeNode subTreeNode in selectedNode.Nodes)
+                LoadLevel(subTreeNode);
         }
     }
 }

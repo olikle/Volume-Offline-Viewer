@@ -36,7 +36,7 @@ namespace Klepach.Core.VHDV.Db
 
         public override string ToString()
         {
-            return $"{Name} ({Id})";
+            return $"{Label} ({SystemName}/{Name})";
         }
         /*
 Access = 0
