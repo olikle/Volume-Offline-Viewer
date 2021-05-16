@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Klepach.Core.VHDV.Db;
+using System;
 using System.Data;
 using System.IO;
 
@@ -27,8 +28,6 @@ namespace Klepach.Core.VHDV.Cli
 
                 Inventory inventory = new Inventory(db);
                 inventory.ScanDrive(driveLetter);
-
-
 
                 /*
                 // add drive info to database

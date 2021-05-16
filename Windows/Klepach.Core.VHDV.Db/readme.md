@@ -21,6 +21,8 @@ dotnet tool list
 dotnet tool list --global
 ## add ef tool
 dotnet tool install dotnet-ef --global
+## or update
+dotnet tool update dotnet-ef --global
 
 ## add changes
 dotnet ef migrations add AddDiskPartitionAndFile

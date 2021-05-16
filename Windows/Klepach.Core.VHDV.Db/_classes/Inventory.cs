@@ -6,9 +6,12 @@ using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 
-namespace Klepach.Core.VHDV.Cli
+namespace Klepach.Core.VHDV.Db
 {
-    class Inventory
+    /// <summary>
+    /// Inventory
+    /// </summary>
+    public class Inventory
     {
         AppDbContext _db;
 
@@ -41,7 +44,7 @@ namespace Klepach.Core.VHDV.Cli
 
             var volumeId = diskInfo.SerialNumber;
 
-            VOVDisk diskRecord = _db.vOVDisks.AsNoTracking().Where(p => p.VolumeId == diskInfo.VolumeId).FirstOrDefault();
+            VOVDisk diskRecord = _db.Disks.AsNoTracking().Where(p => p.VolumeId == diskInfo.VolumeId).FirstOrDefault();
             var newRecord = (diskRecord == null);
             if (newRecord)
             {
@@ -64,9 +67,9 @@ namespace Klepach.Core.VHDV.Cli
             diskRecord.Type = diskInfo.Type;
 
             if (newRecord)
-                _db.vOVDisks.Add(diskRecord);
+                _db.Disks.Add(diskRecord);
             else
-                _db.vOVDisks.Update(diskRecord);
+                _db.Disks.Update(diskRecord);
             _db.SaveChanges();
 
             return diskRecord;
@@ -85,7 +88,7 @@ namespace Klepach.Core.VHDV.Cli
             var partitionInfo = HardDriveInfo.GetPartitionInfo(driveLetter);
             var partId = partitionInfo.VolumeSerialNumber;
 
-            VOVPartition partitionRecord = _db.vOVPartitions.AsNoTracking().Where(p => p.PartitionId == partId).FirstOrDefault();
+            VOVPartition partitionRecord = _db.Partitions.AsNoTracking().Where(p => p.PartitionId == partId).FirstOrDefault();
             var newRecord = (partitionRecord == null);
             if (newRecord)
             {
@@ -96,7 +99,8 @@ namespace Klepach.Core.VHDV.Cli
             partitionRecord.Caption = partitionInfo.Caption;
             partitionRecord.Description = partitionInfo.Description;
             partitionRecord.DeviceID = partitionInfo.DeviceID;
-            partitionRecord.DriveType = partitionInfo.DriveType;
+            //partitionRecord.DriveType = partitionInfo.DriveType;
+            partitionRecord.DriveType = di.DriveType.ToString();
             partitionRecord.FileSystem = partitionInfo.FileSystem;
             partitionRecord.MediaType = partitionInfo.MediaType;
             partitionRecord.Name = partitionInfo.Name;
@@ -105,10 +109,12 @@ namespace Klepach.Core.VHDV.Cli
             partitionRecord.VolumeName = partitionInfo.VolumeName;
             partitionRecord.VolumeSerialNumber = partitionInfo.VolumeSerialNumber;
 
+            partitionRecord.Label = di.VolumeLabel;
+
             if (newRecord)
-                _db.vOVPartitions.Add(partitionRecord);
+                _db.Partitions.Add(partitionRecord);
             else
-                _db.vOVPartitions.Update(partitionRecord);
+                _db.Partitions.Update(partitionRecord);
             _db.SaveChanges();
             return partitionRecord;
         }
@@ -123,77 +129,13 @@ namespace Klepach.Core.VHDV.Cli
 
             int dirLevel = 0;
             AddDirectories(driveLetter + "\\", partitionId, dirLevel);
+            _db.SaveChanges();
             /*
             //IEnumerable<string> files = Directory.EnumerateFiles($"{_driveLetter}\\", "*.*", SearchOption.AllDirectories);
             //IEnumerable<string> files = Directory.EnumerateFiles($"{_driveLetter}\\");
             //IEnumerable<string> items = Directory.EnumerateDirectories($"{_driveLetter}\\");
             //IEnumerable<string> items = Directory.EnumerateFileSystemEntries($"{_driveLetter}\\");
-
-            IEnumerable<string> items = Directory.EnumerateFiles($"{driveLetter}\\", "*.*", SearchOption.AllDirectories);
-            //IEnumerable<string> items = Directory.EnumerateFiles($"{driveLetter}\\", "*.*", SearchOption.TopDirectoryOnly);
-            try
-            {
-                foreach (string item in items)
-                {
-                    FileInfo fi = new FileInfo(item);
-                    var filePath = fi.Directory.FullName.Substring(2);
-                    Console.WriteLine($"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}");
-
-                    VOVFileSystemItem fileRecord = _db.vOVFileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == filePath && p.Name == fi.Name).FirstOrDefault();
-                    var newFile = (fileRecord == null);
-                    if (newFile)
-                    {
-                        fileRecord = new VOVFileSystemItem();
-                        fileRecord.PartitionId = partitionId;
-                        fileRecord.Path = filePath;
-                        fileRecord.Name = fi.Name;
-                        fileRecord.Type = "file";
-                    }
-                    fileRecord.DriveLetter = driveLetter;
-                    fileRecord.Attribute = fi.Attributes.ToString();
-                    fileRecord.Created = fi.CreationTimeUtc;
-                    fileRecord.LastModifiered = fi.LastWriteTimeUtc;
-                    fileRecord.Size = fi.Length;
-                    if (newFile)
-                        _db.vOVFileSystemItems.Add(fileRecord);
-                    else
-                        _db.vOVFileSystemItems.Update(fileRecord);
-                }
-            }catch(Exception Ex)
-            {
-                Console.WriteLine($"Error {Ex.Message}");
-            }
-            //items = Directory.EnumerateDirectories($"{driveLetter}\\", "*.*", SearchOption.TopDirectoryOnly);
-            items = Directory.EnumerateDirectories($"{driveLetter}\\", "*.*", SearchOption.AllDirectories);
-            foreach (string item in items)
-            {
-                DirectoryInfo di = new DirectoryInfo(item);                
-                var dirPath = di.Parent.FullName.Substring(2);
-                Console.WriteLine($"file: {item}, {di.Extension}, {di.Attributes}, {di.CreationTime}, {di.LastAccessTime}, {di.LastWriteTime}");
-
-                VOVFileSystemItem dirRecord = _db.vOVFileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == dirPath && p.Name == di.Name).FirstOrDefault();
-                var newDir = (dirRecord == null);
-                if (newDir)
-                {
-                    dirRecord = new VOVFileSystemItem();
-                    dirRecord.PartitionId = partitionId;
-                    dirRecord.Path = dirPath;
-                    dirRecord.Name = di.Name;
-                    dirRecord.Type = "dir";
-                }
-                dirRecord.DriveLetter = driveLetter;
-                dirRecord.Attribute = di.Attributes.ToString();
-                dirRecord.Created = di.CreationTimeUtc;
-                dirRecord.LastModifiered = di.LastWriteTimeUtc;
-                dirRecord.Size = 0;
-                dirRecord.PartitionId = partitionId;
-                if (newDir)
-                    _db.vOVFileSystemItems.Add(dirRecord);
-                else
-                    _db.vOVFileSystemItems.Update(dirRecord);
-            }
             */
-            _db.SaveChanges();
 
             stopWatch.Stop();
             Console.WriteLine($"time: {stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds},{stopWatch.ElapsedMilliseconds}");
@@ -206,6 +148,9 @@ namespace Klepach.Core.VHDV.Cli
         private void AddDirectories(string path, int partitionId, int dirLevel)
         {
             dirLevel++;
+            
+            if (dirLevel > 2) return;
+
             var driveLetter = path.Substring(0, 1);
             var items = Directory.EnumerateDirectories($"{path}", "*.*", SearchOption.TopDirectoryOnly);
             try
@@ -216,7 +161,7 @@ namespace Klepach.Core.VHDV.Cli
                     var dirPath = di.Parent.FullName.Substring(2);
                     Console.WriteLine($"file: {item}, {di.Extension}, {di.Attributes}, {di.CreationTime}, {di.LastAccessTime}, {di.LastWriteTime}");
 
-                    VOVFileSystemItem dirRecord = _db.vOVFileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == dirPath && p.Name == di.Name).FirstOrDefault();
+                    VOVFileSystemItem dirRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == dirPath && p.Name == di.Name).FirstOrDefault();
                     var newDir = (dirRecord == null);
                     if (newDir)
                     {
@@ -235,15 +180,23 @@ namespace Klepach.Core.VHDV.Cli
                     dirRecord.LastModifiered = di.LastWriteTimeUtc;
                     dirRecord.Size = 0;
                     dirRecord.PartitionId = partitionId;
-                    if (newDir)
-                        _db.vOVFileSystemItems.Add(dirRecord);
-                    else
-                        _db.vOVFileSystemItems.Update(dirRecord);
 
-                    // add files 
-                    AddFiles(di.FullName, partitionId, dirLevel);
-                    // get the next directories
-                    AddDirectories(di.FullName, partitionId, dirLevel);
+                    try
+                    {
+                        // add files 
+                        AddFiles(di.FullName, partitionId, dirLevel);
+                        // get the next directories
+                        AddDirectories(di.FullName, partitionId, dirLevel);
+                    }
+                    catch (Exception Ex)
+                    {
+                        dirRecord.Comment = $"Last Error: {Ex.Message}";
+                    }
+
+                    if (newDir)
+                        _db.FileSystemItems.Add(dirRecord);
+                    else
+                        _db.FileSystemItems.Update(dirRecord);
                 }
             }
             catch (Exception Ex)
@@ -269,7 +222,7 @@ namespace Klepach.Core.VHDV.Cli
                     var filePath = fi.Directory.FullName.Substring(2);
                     Console.WriteLine($"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}");
 
-                    VOVFileSystemItem fileRecord = _db.vOVFileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == filePath && p.Name == fi.Name).FirstOrDefault();
+                    VOVFileSystemItem fileRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == filePath && p.Name == fi.Name).FirstOrDefault();
                     var newFile = (fileRecord == null);
                     if (newFile)
                     {
@@ -288,9 +241,9 @@ namespace Klepach.Core.VHDV.Cli
                     fileRecord.LastModifiered = fi.LastWriteTimeUtc;
                     fileRecord.Size = fi.Length;
                     if (newFile)
-                        _db.vOVFileSystemItems.Add(fileRecord);
+                        _db.FileSystemItems.Add(fileRecord);
                     else
-                        _db.vOVFileSystemItems.Update(fileRecord);
+                        _db.FileSystemItems.Update(fileRecord);
                 }
             }
             catch (Exception Ex)

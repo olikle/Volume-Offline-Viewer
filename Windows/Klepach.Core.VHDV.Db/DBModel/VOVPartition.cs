@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Klepach.Core.VHDV.Cli
+namespace Klepach.Core.VHDV.Db
 {
-    class VOVPartition
+    /// <summary>
+    /// VOVPartition
+    /// </summary>
+    public class VOVPartition
     {
         // database Id
         public int Id { get; set; }
@@ -16,10 +19,11 @@ namespace Klepach.Core.VHDV.Cli
         public string Caption { get; set; }
         public string DeviceID { get; set; }
         public string Description { get; set; }
-        public int DriveType { get; set; }
+        public string DriveType { get; set; }
         public string FileSystem { get; set; }
         public int MediaType { get; set; }
         public string Name { get; set; }
+        public string Label { get; set; }
         public string SystemName { get; set; }
         public bool VolumeDirty { get; set; }
         public string VolumeName { get; set; }

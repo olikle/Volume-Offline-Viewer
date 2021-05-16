@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Klepach.Core.VHDV.Db;
 
 namespace Klepach.Core.VHDV.Client
 {
@@ -14,6 +15,8 @@ namespace Klepach.Core.VHDV.Client
     {
         public Main()
         {
+            AppDbContext db = new AppDbContext();
+
             InitializeComponent();
         }
 

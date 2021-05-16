@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Klepach.Core.VHDV.Cli
+namespace Klepach.Core.VHDV.Db
 {
-    class VOVDisk
+    /// <summary>
+    /// VOVDisk
+    /// </summary>
+    public class VOVDisk
     {
         public int Id { get; set; }
         public string Type { get; set; }

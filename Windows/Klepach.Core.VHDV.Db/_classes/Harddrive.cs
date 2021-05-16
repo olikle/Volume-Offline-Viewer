@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Management;
 
-namespace Klepach.Core.VHDV.Cli
+namespace Klepach.Core.VHDV.Db
 {
     class HardDriveInfo
     {

@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Klepach.Core.VHDV.Cli
+namespace Klepach.Core.VHDV.Db
 {
-    class VOVFileSystemItem
+    /// <summary>
+    /// VOVFileSystemItem
+    /// </summary>
+    public class VOVFileSystemItem
     {
         public int Id { get; set; }
         public string Type { get; set; }
@@ -18,9 +21,11 @@ namespace Klepach.Core.VHDV.Cli
         public DateTime Created { get; set; }
         public DateTime LastModifiered { get; set; }
         public long Size { get; set; }
+        public string Comment{ get; set; }
 
         public int? PartitionId { get; set; }
         public VOVPartition Partition { get; set; }
+
 
         public override string ToString()
         {

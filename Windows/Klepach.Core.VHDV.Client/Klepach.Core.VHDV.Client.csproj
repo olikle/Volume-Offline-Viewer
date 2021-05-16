@@ -8,4 +8,12 @@
     <AssemblyOriginatorKeyFile>Properties\Klepach.Aceware.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Klepach.Core.VHDV.Db\Klepach.Core.VHDV.Db.csproj" />
+  </ItemGroup>
+
 </Project>
