@@ -20,7 +20,8 @@ namespace Klepach.Core.VHDV.Cli
 
             base.OnConfiguring(optionsBuilder);
         }
-        public DbSet<VOVFile> vOVFiles { get; set; }
-        public DbSet<VOVPartition> vOVPartition { get; set; }
+        public DbSet<VOVFileSystemItem> vOVFileSystemItems { get; set; }
+        public DbSet<VOVPartition> vOVPartitions { get; set; }
+        public DbSet<VOVDisk> vOVDisks { get; set; }
     }
 }

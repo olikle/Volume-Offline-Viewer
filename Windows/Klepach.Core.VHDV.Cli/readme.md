@@ -30,4 +30,5 @@ dotnet ef dbcontext list
 
 
 ## generate table
+dotnet ef database create
 dotnet ef database update

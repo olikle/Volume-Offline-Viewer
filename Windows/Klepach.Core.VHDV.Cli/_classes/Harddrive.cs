@@ -9,6 +9,11 @@ namespace Klepach.Core.VHDV.Cli
     {
         #region PartitionInfo
 
+        /// <summary>
+        /// Gets the partition information.
+        /// </summary>
+        /// <param name="driveLetter">The drive letter.</param>
+        /// <returns></returns>
         public static Partition GetPartitionInfo(string driveLetter)
         {
             Partition returnPartition = new Partition();
@@ -185,10 +190,16 @@ VolumeSerialNumber = 30A2032B
         }
         #endregion
 
+        /// <summary>
+        /// Gets the information.
+        /// </summary>
+        /// <param name="driveLetter">The drive letter.</param>
+        /// <param name="volumeId">The volume identifier.</param>
+        /// <returns></returns>
         public static Disk GetInfo(string driveLetter, string volumeId)
         {
             Disk returnVolume = new Disk();
-            returnVolume.volumeId = volumeId;
+            returnVolume.VolumeId = volumeId;
             ManagementObjectSearcher mangObjSearch = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
 
             foreach (ManagementObject mangObj in mangObjSearch.Get())
@@ -359,7 +370,7 @@ VolumeSerialNumber = 30A2032B
     {
         public int Id { get; set; }
         public string Type { get; set; }
-        public string volumeId { get; set; }
+        public string VolumeId { get; set; }
         public string SerialNumber { get; set; }
         public string Caption { get; set; }
         public string Description { get; set; }
