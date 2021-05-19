@@ -15,8 +15,12 @@ namespace Klepach.Core.VHDV.Client
 {
     public partial class Main : Form
     {
+        #region variable
         AppDbContext db;
         int _currentPartitionId = -1;
+        #endregion
+
+        #region Main
         /// <summary>
         /// Initializes a new instance of the <see cref="Main"/> class.
         /// </summary>
@@ -26,6 +30,7 @@ namespace Klepach.Core.VHDV.Client
 
             InitializeComponent();
         }
+        #endregion
 
         #region Form
         /// <summary>
@@ -35,6 +40,13 @@ namespace Klepach.Core.VHDV.Client
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void Main_Load(object sender, EventArgs e)
         {
+            // Add columns
+            lvFolderAndFiles.Columns.Add("Name", "Name");
+            lvFolderAndFiles.Columns.Add("LastModifiered", "LastModifiered");
+            lvFolderAndFiles.Columns.Add("Type", "Type");
+            lvFolderAndFiles.Columns.Add("Size", -1, HorizontalAlignment.Right);
+            lvFolderAndFiles.Columns.Add("", -1);
+            lvFolderAndFiles.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
             LoadPartitionsList();
         }
         #endregion
@@ -69,7 +81,7 @@ namespace Klepach.Core.VHDV.Client
             {
                 TreeNode treeNode = new TreeNode();
                 treeNode.Text = dirRecord.Name;
-                treeNode.Tag = dirRecord.Name;
+                treeNode.Tag = dirRecord.Path + dirRecord.Name;
                 treeNode.ImageKey = "folder";
                 treeNode.SelectedImageKey = "folder";
                 if (selectedNode == null)
@@ -123,12 +135,16 @@ namespace Klepach.Core.VHDV.Client
                     item.ImageKey = "document";
                     itemType = Path.GetExtension(dirRecord.Name).Substring(1);
                 }
+                item.Tag = dirRecord.Path + dirRecord.Name; 
                 subItems = new ListViewItem.ListViewSubItem[]
                 {
                     new ListViewItem.ListViewSubItem(item, dirRecord.LastModifiered.ToShortDateString()),
                     new ListViewItem.ListViewSubItem(item, itemType),
                     new ListViewItem.ListViewSubItem(item, dirRecord.Type == "dir" ? "" : itemSize)
                 };
+                subItems[0].Name = "LastModifiered";
+                subItems[1].Name = "Type";
+                subItems[2].Name = "Size";
                 item.SubItems.AddRange(subItems);
                 lvFolderAndFiles.Items.Add(item);
 
@@ -152,7 +168,6 @@ namespace Klepach.Core.VHDV.Client
             LoadLevel(null);
             LoadCurrentLevel(null);
         }
-        #endregion
 
         /// <summary>
         /// Handles the AfterSelect event of the tvFolder control.
@@ -176,5 +191,60 @@ namespace Klepach.Core.VHDV.Client
             foreach (TreeNode subTreeNode in selectedNode.Nodes)
                 LoadLevel(subTreeNode);
         }
+
+        /// <summary>
+        /// Handles the MouseDoubleClick event of the lvFolderAndFiles control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MouseEventArgs"/> instance containing the event data.</param>
+        private void lvFolderAndFiles_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            var senderList = (ListView)sender;
+            var clickedItem = senderList.HitTest(e.Location).Item;
+            if (clickedItem == null)
+                return;
+            var type = clickedItem.SubItems["Type"].Text;
+            if (type != "dir") return;
+
+            //var foundNodes = tvFolder.Nodes.Find(clickedItem.Tag.ToString(), true);
+            //if (foundNodes == null || foundNodes.Length == 0)
+            //    return;
+            //var foundNode = foundNodes[0];
+
+            var foundNode = GetNode(clickedItem.Tag, null);
+            if (foundNode == null)
+               return;
+
+            foundNode.Expand();
+
+            foreach (TreeNode subTreeNode in foundNode.Nodes)
+                LoadLevel(subTreeNode);
+
+            LoadCurrentLevel(foundNode);
+        }
+        /// <summary>
+        /// Gets the node.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <param name="rootNode">The root node.</param>
+        /// <returns></returns>
+        public TreeNode GetNode(object tag, TreeNode rootNode)
+        {
+            TreeNodeCollection nodes;
+            if (rootNode == null)
+                nodes = tvFolder.Nodes;
+            else
+                nodes = rootNode.Nodes;
+            foreach (TreeNode node in nodes)
+            {
+                if (node.Tag.Equals(tag)) return node;
+
+                //recursion
+                var next = GetNode(tag, node);
+                if (next != null) return next;
+            }
+            return null;
+        }
+        #endregion
     }
 }

@@ -39,12 +39,7 @@ namespace Klepach.Core.VHDV.Client
             this.tvFolder = new System.Windows.Forms.TreeView();
             this.iconSmallImageList = new System.Windows.Forms.ImageList(this.components);
             this.lvFolderAndFiles = new System.Windows.Forms.ListView();
-            this.clhName = new System.Windows.Forms.ColumnHeader();
-            this.clhLastModifiered = new System.Windows.Forms.ColumnHeader();
-            this.clhType = new System.Windows.Forms.ColumnHeader();
-            this.clhSize = new System.Windows.Forms.ColumnHeader();
             this.iconLargeImageList = new System.Windows.Forms.ImageList(this.components);
-            this.clhLast = new System.Windows.Forms.ColumnHeader();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -142,12 +137,6 @@ namespace Klepach.Core.VHDV.Client
             this.lvFolderAndFiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lvFolderAndFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.clhName,
-            this.clhLastModifiered,
-            this.clhType,
-            this.clhSize,
-            this.clhLast});
             this.lvFolderAndFiles.HideSelection = false;
             this.lvFolderAndFiles.LargeImageList = this.iconLargeImageList;
             this.lvFolderAndFiles.Location = new System.Drawing.Point(3, 4);
@@ -157,25 +146,7 @@ namespace Klepach.Core.VHDV.Client
             this.lvFolderAndFiles.TabIndex = 0;
             this.lvFolderAndFiles.UseCompatibleStateImageBehavior = false;
             this.lvFolderAndFiles.View = System.Windows.Forms.View.Details;
-            // 
-            // clhName
-            // 
-            this.clhName.Text = "Name";
-            // 
-            // clhLastModifiered
-            // 
-            this.clhLastModifiered.DisplayIndex = 2;
-            this.clhLastModifiered.Text = "LastModifiered";
-            // 
-            // clhType
-            // 
-            this.clhType.DisplayIndex = 1;
-            this.clhType.Text = "Type";
-            // 
-            // clhSize
-            // 
-            this.clhSize.Text = "Size";
-            this.clhSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.lvFolderAndFiles.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lvFolderAndFiles_MouseDoubleClick);
             // 
             // iconLargeImageList
             // 
@@ -184,10 +155,6 @@ namespace Klepach.Core.VHDV.Client
             this.iconLargeImageList.TransparentColor = System.Drawing.Color.Transparent;
             this.iconLargeImageList.Images.SetKeyName(0, "folder");
             this.iconLargeImageList.Images.SetKeyName(1, "document");
-            // 
-            // clhLast
-            // 
-            this.clhLast.Text = "";
             // 
             // Main
             // 
@@ -221,13 +188,8 @@ namespace Klepach.Core.VHDV.Client
         private System.Windows.Forms.ListView lvFolderAndFiles;
         private System.Windows.Forms.ComboBox cmbPartitions;
         private System.Windows.Forms.ImageList iconLargeImageList;
-        private System.Windows.Forms.ColumnHeader clhName;
         private System.Windows.Forms.ImageList iconSmallImageList;
-        private System.Windows.Forms.ColumnHeader clhLastModifiered;
-        private System.Windows.Forms.ColumnHeader clhSize;
-        private System.Windows.Forms.ColumnHeader clhType;
         private System.Windows.Forms.ToolStripButton tsbInfo;
-        private System.Windows.Forms.ColumnHeader clhLast;
     }
 }
 
