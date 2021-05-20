@@ -219,11 +219,13 @@ namespace Klepach.Core.VHDV.Db
             //IEnumerable<string> items = Directory.EnumerateFiles($"{driveLetter}\\", "*.*", SearchOption.TopDirectoryOnly);
             try
             {
+                Console.WriteLine("scan files...");
                 foreach (string item in items)
                 {
                     FileInfo fi = new FileInfo(item);
                     var filePath = fi.Directory.FullName.Substring(2);
-                    Console.WriteLine($"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}");
+                    // no output for files
+                    //Console.WriteLine($"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}");
 
                     VOVFileSystemItem fileRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == filePath && p.Name == fi.Name).FirstOrDefault();
                     var newFile = (fileRecord == null);
