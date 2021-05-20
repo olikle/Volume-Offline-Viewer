@@ -18,6 +18,7 @@ namespace Klepach.Core.VHDV.Client
         #region variable
         AppDbContext db;
         int _currentPartitionId = -1;
+        string viewType = "list";
         #endregion
 
         #region Main
@@ -40,13 +41,7 @@ namespace Klepach.Core.VHDV.Client
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void Main_Load(object sender, EventArgs e)
         {
-            // Add columns
-            lvFolderAndFiles.Columns.Add("Name", "Name");
-            lvFolderAndFiles.Columns.Add("LastModifiered", "LastModifiered");
-            lvFolderAndFiles.Columns.Add("Type", "Type");
-            lvFolderAndFiles.Columns.Add("Size", -1, HorizontalAlignment.Right);
-            lvFolderAndFiles.Columns.Add("", -1);
-            lvFolderAndFiles.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            InitListView();
             LoadPartitionsList();
         }
         #endregion
@@ -81,7 +76,8 @@ namespace Klepach.Core.VHDV.Client
             {
                 TreeNode treeNode = new TreeNode();
                 treeNode.Text = dirRecord.Name;
-                treeNode.Tag = dirRecord.Path + dirRecord.Name;
+                treeNode.Tag = $"{dirRecord.Path}\\{dirRecord.Name}-[{dirRecord.PartitionId}]";
+
                 treeNode.ImageKey = "folder";
                 treeNode.SelectedImageKey = "folder";
                 if (selectedNode == null)
@@ -98,21 +94,45 @@ namespace Klepach.Core.VHDV.Client
                     LoadLevel(treeNode);
             }
         }
+
         /// <summary>
         /// Loads the current level.
         /// </summary>
         /// <param name="selectedNode">The selected node.</param>
-        private void LoadCurrentLevel(TreeNode selectedNode)
+        private void LoadCurrentLevel(TreeNode selectedNode, string searchText)
         {
+            viewType = "list";
+            if (searchText != null) viewType = "search";
+
+
             var path = "\\";
-            if (selectedNode != null) path = selectedNode.Name;
+            if (viewType == "list" && selectedNode != null) path = selectedNode.Name;
+            if (viewType == "search") searchText = searchText.ToLowerInvariant();
 
             // get all the directories from this Level
-            List<VOVFileSystemItem> dirRecords = db.FileSystemItems.AsNoTracking()
-                .Where(r => r.PartitionId == _currentPartitionId && r.Path == path)
-                .OrderBy(r => r.Type).ThenBy(r => r.Name.ToLower())
-                .ToList();
+            List<VOVFileSystemItem> dirRecords;
 
+            if (viewType == "list")
+            {
+                // list items from selected node
+                InitListView();
+                dirRecords = db.FileSystemItems.AsNoTracking()
+                    .Where(r => r.PartitionId == _currentPartitionId && r.Path == path)
+                    .OrderBy(r => r.Type).ThenBy(r => r.Name.ToLower())
+                    .ToList();
+            }
+            else
+            {
+                // search for text
+                InitListView();
+                dirRecords = db.FileSystemItems.AsNoTracking()
+                    //.Join(db.Partitions, r => r.PartitionId, p => p.PartitionId (r, p) )
+                    .Where(r => r.Name.ToLower().Contains(searchText) || r.Path.ToLower().Contains(searchText))
+                    .OrderBy(r => r.Name.ToLower())
+                    .ToList();
+            }
+
+            statusStrip.Items[0].Text = $"{dirRecords.Count} items";
             lvFolderAndFiles.Items.Clear();
             var itemType = "";
             foreach (var dirRecord in dirRecords)
@@ -135,21 +155,75 @@ namespace Klepach.Core.VHDV.Client
                     item.ImageKey = "document";
                     itemType = Path.GetExtension(dirRecord.Name).Substring(1);
                 }
-                item.Tag = dirRecord.Path + dirRecord.Name; 
-                subItems = new ListViewItem.ListViewSubItem[]
+                item.Tag = $"{dirRecord.Path}\\{dirRecord.Name}-[{dirRecord.PartitionId}]";
+                if (viewType == "list")
                 {
-                    new ListViewItem.ListViewSubItem(item, dirRecord.LastModifiered.ToShortDateString()),
-                    new ListViewItem.ListViewSubItem(item, itemType),
-                    new ListViewItem.ListViewSubItem(item, dirRecord.Type == "dir" ? "" : itemSize)
-                };
-                subItems[0].Name = "LastModifiered";
-                subItems[1].Name = "Type";
-                subItems[2].Name = "Size";
+                    subItems = new ListViewItem.ListViewSubItem[]
+                    {
+                        new ListViewItem.ListViewSubItem(item, dirRecord.LastModifiered.ToShortDateString()),
+                        new ListViewItem.ListViewSubItem(item, itemType),
+                        new ListViewItem.ListViewSubItem(item, dirRecord.Type == "dir" ? "" : itemSize)
+                    };
+                    subItems[0].Name = "LastModifiered";
+                    subItems[1].Name = "Type";
+                    subItems[2].Name = "Size";
+                }
+                else
+                {
+                    subItems = new ListViewItem.ListViewSubItem[]
+                    {
+                        new ListViewItem.ListViewSubItem(item, dirRecord.Path),
+                        new ListViewItem.ListViewSubItem(item, dirRecord.LastModifiered.ToShortDateString()),
+                        new ListViewItem.ListViewSubItem(item, itemType),
+                        new ListViewItem.ListViewSubItem(item, dirRecord.Type == "dir" ? "" : itemSize)
+                    };
+                    subItems[0].Name = "Path";
+                    subItems[1].Name = "LastModifiered";
+                    subItems[2].Name = "Type";
+                    subItems[3].Name = "Size";
+                }
                 item.SubItems.AddRange(subItems);
                 lvFolderAndFiles.Items.Add(item);
-
-                lvFolderAndFiles.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
             }
+            lvFolderAndFiles.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+        }
+        /// <summary>
+        /// Does the search.
+        /// </summary>
+        private void DoSearch()
+        {
+            if (txtSuche.Text == "")
+                return;
+
+            LoadCurrentLevel(null, txtSuche.Text);       
+        }
+        /// <summary>
+        /// Initializes the ListView.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        private void InitListView()
+        {
+            lvFolderAndFiles.Clear();
+            if (viewType == "list")
+            {
+                // Add columns
+                lvFolderAndFiles.Columns.Add("Name", "Name");
+                lvFolderAndFiles.Columns.Add("LastModifiered", "LastModifiered");
+                lvFolderAndFiles.Columns.Add("Type", "Type");
+                lvFolderAndFiles.Columns.Add("Size", -1, HorizontalAlignment.Right);
+                lvFolderAndFiles.Columns.Add("", -1);
+            }
+            else
+            {
+                // Add columns
+                lvFolderAndFiles.Columns.Add("Name", "Name");
+                lvFolderAndFiles.Columns.Add("Path", "Path");
+                lvFolderAndFiles.Columns.Add("LastModifiered", "LastModifiered");
+                lvFolderAndFiles.Columns.Add("Type", "Type");
+                lvFolderAndFiles.Columns.Add("Size", -1, HorizontalAlignment.Right);
+                lvFolderAndFiles.Columns.Add("", -1);
+            }
+            lvFolderAndFiles.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
         #endregion
 
@@ -163,10 +237,15 @@ namespace Klepach.Core.VHDV.Client
         {
             if (cmbPartitions.SelectedItem == null)
                 return;
+            tvFolder.Nodes.Clear();
             var partition = ((VOVPartition)cmbPartitions.SelectedItem);
             _currentPartitionId = partition.Id;
             LoadLevel(null);
-            LoadCurrentLevel(null);
+            if (viewType == "search")
+                return;
+
+            lvFolderAndFiles.Items.Clear();
+            LoadCurrentLevel(null, null);
         }
 
         /// <summary>
@@ -177,7 +256,7 @@ namespace Klepach.Core.VHDV.Client
         private void tvFolder_AfterSelect(object sender, TreeViewEventArgs e)
         {
             var selectedNode = e.Node;
-            LoadCurrentLevel(selectedNode);
+            LoadCurrentLevel(selectedNode, null);
         }
         /// <summary>
         /// Handles the BeforeExpand event of the tvFolder control.
@@ -203,7 +282,24 @@ namespace Klepach.Core.VHDV.Client
             var clickedItem = senderList.HitTest(e.Location).Item;
             if (clickedItem == null)
                 return;
-            var type = clickedItem.SubItems["Type"].Text;
+
+            if (viewType == "search")
+            {
+                var partitionId = clickedItem.Tag.ToString();
+                partitionId = partitionId.Substring(partitionId.LastIndexOf("-[") + 2);
+                partitionId = partitionId.Substring(0, partitionId.Length - 1);
+
+                foreach (VOVPartition cmbItem in cmbPartitions.Items)
+                {
+                    if (cmbItem.Id == int.Parse(partitionId))
+                    {
+                        cmbPartitions.SelectedItem = cmbItem;
+                        break;
+                    }
+                }
+            }
+
+                var type = clickedItem.SubItems["Type"].Text;
             if (type != "dir") return;
 
             //var foundNodes = tvFolder.Nodes.Find(clickedItem.Tag.ToString(), true);
@@ -220,7 +316,10 @@ namespace Klepach.Core.VHDV.Client
             foreach (TreeNode subTreeNode in foundNode.Nodes)
                 LoadLevel(subTreeNode);
 
-            LoadCurrentLevel(foundNode);
+            if (viewType == "search")
+                return;
+
+            LoadCurrentLevel(foundNode, null);
         }
         /// <summary>
         /// Gets the node.
@@ -244,6 +343,27 @@ namespace Klepach.Core.VHDV.Client
                 if (next != null) return next;
             }
             return null;
+        }
+        /// <summary>
+        /// Handles the KeyPress event of the txtSuche control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="KeyPressEventArgs"/> instance containing the event data.</param>
+        private void txtSuche_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar != (char)Keys.Enter)
+                return;
+
+            DoSearch();
+        }
+        /// <summary>
+        /// Handles the Click event of the btnSuche control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnSuche_Click(object sender, EventArgs e)
+        {
+            DoSearch();
         }
         #endregion
     }
