@@ -32,7 +32,11 @@ namespace Klepach.Core.VHDV.Client
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.statusStrip = new System.Windows.Forms.StatusStrip();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.tssl1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStrip = new System.Windows.Forms.ToolStrip();
+            this.tsbOpenDatabase = new System.Windows.Forms.ToolStripButton();
+            this.tsbNewDatabase = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsbInfo = new System.Windows.Forms.ToolStripButton();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.cmbPartitions = new System.Windows.Forms.ComboBox();
@@ -43,9 +47,9 @@ namespace Klepach.Core.VHDV.Client
             this.label1 = new System.Windows.Forms.Label();
             this.lvFolderAndFiles = new System.Windows.Forms.ListView();
             this.iconLargeImageList = new System.Windows.Forms.ImageList(this.components);
-            this.tssl1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.statusStrip.SuspendLayout();
-            this.toolStrip1.SuspendLayout();
+            this.toolStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -61,16 +65,49 @@ namespace Klepach.Core.VHDV.Client
             this.statusStrip.Size = new System.Drawing.Size(805, 22);
             this.statusStrip.TabIndex = 0;
             // 
-            // toolStrip1
+            // tssl1
             // 
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tssl1.Name = "tssl1";
+            this.tssl1.Size = new System.Drawing.Size(0, 17);
+            // 
+            // toolStrip
+            // 
+            this.toolStrip.ImageScalingSize = new System.Drawing.Size(48, 48);
+            this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsbOpenDatabase,
+            this.tsbNewDatabase,
+            this.toolStripSeparator1,
             this.tsbInfo});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.toolStrip1.Size = new System.Drawing.Size(805, 25);
-            this.toolStrip1.TabIndex = 1;
-            this.toolStrip1.Text = "toolStrip1";
+            this.toolStrip.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip.Name = "toolStrip";
+            this.toolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
+            this.toolStrip.Size = new System.Drawing.Size(805, 55);
+            this.toolStrip.TabIndex = 1;
+            // 
+            // tsbOpenDatabase
+            // 
+            this.tsbOpenDatabase.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbOpenDatabase.Image = ((System.Drawing.Image)(resources.GetObject("tsbOpenDatabase.Image")));
+            this.tsbOpenDatabase.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbOpenDatabase.Name = "tsbOpenDatabase";
+            this.tsbOpenDatabase.Size = new System.Drawing.Size(52, 52);
+            this.tsbOpenDatabase.Text = "Open Database";
+            this.tsbOpenDatabase.Click += new System.EventHandler(this.tsbOpenDatabase_Click);
+            // 
+            // tsbNewDatabase
+            // 
+            this.tsbNewDatabase.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbNewDatabase.Image = ((System.Drawing.Image)(resources.GetObject("tsbNewDatabase.Image")));
+            this.tsbNewDatabase.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbNewDatabase.Name = "tsbNewDatabase";
+            this.tsbNewDatabase.Size = new System.Drawing.Size(52, 52);
+            this.tsbNewDatabase.Text = "New Database";
+            this.tsbNewDatabase.Click += new System.EventHandler(this.tsbNewDatabase_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 55);
             // 
             // tsbInfo
             // 
@@ -78,14 +115,14 @@ namespace Klepach.Core.VHDV.Client
             this.tsbInfo.Image = ((System.Drawing.Image)(resources.GetObject("tsbInfo.Image")));
             this.tsbInfo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbInfo.Name = "tsbInfo";
-            this.tsbInfo.Size = new System.Drawing.Size(23, 22);
+            this.tsbInfo.Size = new System.Drawing.Size(52, 52);
             this.tsbInfo.Text = "&New";
             this.tsbInfo.ToolTipText = "Partition Info";
             // 
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 25);
+            this.splitContainer1.Location = new System.Drawing.Point(0, 55);
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -100,7 +137,7 @@ namespace Klepach.Core.VHDV.Client
             this.splitContainer1.Panel2.Controls.Add(this.txtSuche);
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Panel2.Controls.Add(this.lvFolderAndFiles);
-            this.splitContainer1.Size = new System.Drawing.Size(805, 404);
+            this.splitContainer1.Size = new System.Drawing.Size(805, 374);
             this.splitContainer1.SplitterDistance = 267;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -136,17 +173,14 @@ namespace Klepach.Core.VHDV.Client
             this.iconSmallImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
             this.iconSmallImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("iconSmallImageList.ImageStream")));
             this.iconSmallImageList.TransparentColor = System.Drawing.Color.Transparent;
-            this.iconSmallImageList.Images.SetKeyName(0, "document");
-            this.iconSmallImageList.Images.SetKeyName(1, "drive-harddisk");
-            this.iconSmallImageList.Images.SetKeyName(2, "drive-removable-media");
-            this.iconSmallImageList.Images.SetKeyName(3, "folder");
-            this.iconSmallImageList.Images.SetKeyName(4, "Info");
+            this.iconSmallImageList.Images.SetKeyName(0, "Folder-open");
+            this.iconSmallImageList.Images.SetKeyName(1, "Document");
             // 
             // btnSuche
             // 
             this.btnSuche.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSuche.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnSuche.BackgroundImage")));
-            this.btnSuche.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.btnSuche.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.btnSuche.Location = new System.Drawing.Point(509, 4);
             this.btnSuche.Name = "btnSuche";
             this.btnSuche.Size = new System.Drawing.Size(23, 23);
@@ -195,13 +229,12 @@ namespace Klepach.Core.VHDV.Client
             this.iconLargeImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth24Bit;
             this.iconLargeImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("iconLargeImageList.ImageStream")));
             this.iconLargeImageList.TransparentColor = System.Drawing.Color.Transparent;
-            this.iconLargeImageList.Images.SetKeyName(0, "folder");
-            this.iconLargeImageList.Images.SetKeyName(1, "document");
+            this.iconLargeImageList.Images.SetKeyName(0, "Folder-Zoom-In-48x48.png");
+            this.iconLargeImageList.Images.SetKeyName(1, "Document");
             // 
-            // tssl1
+            // openFileDialog
             // 
-            this.tssl1.Name = "tssl1";
-            this.tssl1.Size = new System.Drawing.Size(0, 17);
+            this.openFileDialog.FileName = "openFileDialog1";
             // 
             // Main
             // 
@@ -209,16 +242,17 @@ namespace Klepach.Core.VHDV.Client
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(805, 451);
             this.Controls.Add(this.splitContainer1);
-            this.Controls.Add(this.toolStrip1);
+            this.Controls.Add(this.toolStrip);
             this.Controls.Add(this.statusStrip);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Main";
             this.Text = "Volume Offline Viewer";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Main_FormClosed);
             this.Load += new System.EventHandler(this.Main_Load);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
+            this.toolStrip.ResumeLayout(false);
+            this.toolStrip.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.Panel2.PerformLayout();
@@ -232,7 +266,7 @@ namespace Klepach.Core.VHDV.Client
         #endregion
 
         private System.Windows.Forms.StatusStrip statusStrip;
-        private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.ToolStrip toolStrip;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TreeView tvFolder;
         private System.Windows.Forms.ListView lvFolderAndFiles;
@@ -244,6 +278,10 @@ namespace Klepach.Core.VHDV.Client
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnSuche;
         private System.Windows.Forms.ToolStripStatusLabel tssl1;
+        private System.Windows.Forms.ToolStripButton tsbOpenDatabase;
+        private System.Windows.Forms.ToolStripButton tsbNewDatabase;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
     }
 }
 

@@ -8,15 +8,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Klepach.Core.VHDV.Client.Properties;
 using Klepach.Core.VHDV.Db;
 using Microsoft.EntityFrameworkCore;
+using static Klepach.Core.VHDV.Db.AppDbContext;
 
 namespace Klepach.Core.VHDV.Client
 {
     public partial class Main : Form
     {
         #region variable
-        AppDbContext db;
+        AppDbContext _db;
+        string _databasePath = "";
+        VhdvDbType _dbType;
         int _currentPartitionId = -1;
         string viewType = "list";
         #endregion
@@ -27,8 +31,6 @@ namespace Klepach.Core.VHDV.Client
         /// </summary>
         public Main()
         {
-            db = new AppDbContext();
-
             InitializeComponent();
         }
         #endregion
@@ -41,19 +43,142 @@ namespace Klepach.Core.VHDV.Client
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void Main_Load(object sender, EventArgs e)
         {
+            CommonFunctions.SettingWindowSizeLoad(this);
             InitListView();
-            LoadPartitionsList();
+            EnDisable(false);
+
+            // open the last database
+            _databasePath = Settings.Default.DatabasePath;
+            if (!string.IsNullOrEmpty(_databasePath))
+            {
+                if (Enum.IsDefined(typeof(VhdvDbType), Settings.Default.DatabaseType))
+                    _dbType = (VhdvDbType)Enum.Parse(typeof(VhdvDbType), Settings.Default.DatabaseType);
+                OpenDatabaseConnection();
+            }
+
+        }
+
+        /// <summary>
+        /// Handles the FormClosed event of the Main control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FormClosedEventArgs"/> instance containing the event data.</param>
+        private void Main_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            CommonFunctions.SettingWindowSizeSave(this, true);
         }
         #endregion
 
         #region Functions
+        /// <summary>
+        /// Creates new sqlitedatabase.
+        /// </summary>
+        private void NewSQLiteDatabase()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                InitialDirectory = Path.GetDirectoryName(_databasePath),
+                FileName = "vhdvDatabase.db",
+                Title = "New SQLite Database file",
+
+                CheckFileExists = false,
+                CheckPathExists = true,
+
+                DefaultExt = "db",
+                Filter = "SQLite files (*.db)|*.db",
+                FilterIndex = 2,
+                RestoreDirectory = true,
+            };
+
+            if (openFileDialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            _databasePath = openFileDialog.FileName;
+            // check if file exists
+            if (File.Exists( _databasePath))
+            {
+                var dialogReturn = MessageBox.Show("Database exists - override?", "New Database", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2 );
+                if (dialogReturn == DialogResult.No)
+                    return;
+            }
+
+            _db = new AppDbContext(_databasePath, _dbType);
+
+            _db.Database.EnsureCreated();
+
+            Settings.Default.DatabasePath = _databasePath;
+            Settings.Default.DatabaseType = _dbType.ToString();
+            Settings.Default.Save();
+
+            OpenDatabaseConnection();
+        }
+        /// <summary>
+        /// Opens the sq lite database.
+        /// </summary>
+        private void OpenSQLiteDatabase()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                InitialDirectory = _databasePath,
+                FileName = _databasePath,
+                Title = "Open SQLite Database file",
+
+                CheckFileExists = true,
+                CheckPathExists = true,
+
+                DefaultExt = "db",
+                Filter = "SQLite files (*.db)|*.db",
+                FilterIndex = 2,
+                RestoreDirectory = true,
+
+                ReadOnlyChecked = true,
+                ShowReadOnly = true
+            };
+
+            if (openFileDialog.ShowDialog() != DialogResult.OK)
+                return;
+            _databasePath = openFileDialog.FileName;
+
+            Settings.Default.DatabasePath = _databasePath;
+            Settings.Default.DatabaseType = _dbType.ToString();
+            Settings.Default.Save();
+
+            OpenDatabaseConnection();
+        }
+
+        /// <summary>
+        /// Opens the database.
+        /// </summary>
+        private void OpenDatabaseConnection()
+        {
+            _db = new AppDbContext(_databasePath, _dbType);
+
+            this.Text = $"Volume Offline Viewer - {_databasePath}";
+            EnDisable(true);
+            LoadPartitionsList();
+        }
+
+        /// <summary>
+        /// Ens the disable.
+        /// </summary>
+        /// <param name="enable">if set to <c>true</c> [enable].</param>
+        private void EnDisable(bool enable)
+        {
+            tsbInfo.Enabled = enable;
+            cmbPartitions.Enabled = enable;
+            tvFolder.Enabled = enable;
+            lvFolderAndFiles.Enabled = enable;
+            txtSuche.Enabled = enable;
+            btnSuche.Enabled = enable;
+        }
+
         /// <summary>
         /// Loads the partitions list.
         /// </summary>
         private void LoadPartitionsList()
         {
             cmbPartitions.Items.Clear();
-            List<VOVPartition> partitions = db.Partitions.AsNoTracking().ToList();
+            List<VHDVPartition> partitions = _db.Partitions.AsNoTracking().ToList();
             foreach (var partition in partitions)
                 cmbPartitions.Items.Add(partition);
         }
@@ -68,7 +193,7 @@ namespace Klepach.Core.VHDV.Client
                 path = selectedNode.Name;
 
             // get all the directories from this Level
-            List<VOVFileSystemItem> dirRecords = db.FileSystemItems.AsNoTracking()
+            List<VHDVFileSystemItem> dirRecords = _db.FileSystemItems.AsNoTracking()
                 .Where(r => r.PartitionId == _currentPartitionId && r.Type == "dir" && r.Path == path)
                 .OrderBy(r => r.Name.ToLower())
                 .ToList();
@@ -78,8 +203,8 @@ namespace Klepach.Core.VHDV.Client
                 treeNode.Text = dirRecord.Name;
                 treeNode.Tag = $"{dirRecord.Path}\\{dirRecord.Name}-[{dirRecord.PartitionId}]";
 
-                treeNode.ImageKey = "folder";
-                treeNode.SelectedImageKey = "folder";
+                treeNode.ImageKey = "folder-open";
+                treeNode.SelectedImageKey = "folder-open";
                 if (selectedNode == null)
                 {
                     treeNode.Name = dirRecord.Path + dirRecord.Name;
@@ -110,13 +235,13 @@ namespace Klepach.Core.VHDV.Client
             if (viewType == "search") searchText = searchText.ToLowerInvariant();
 
             // get all the directories from this Level
-            List<VOVFileSystemItem> dirRecords;
+            List<VHDVFileSystemItem> dirRecords;
 
             if (viewType == "list")
             {
                 // list items from selected node
                 InitListView();
-                dirRecords = db.FileSystemItems.AsNoTracking()
+                dirRecords = _db.FileSystemItems.AsNoTracking()
                     .Where(r => r.PartitionId == _currentPartitionId && r.Path == path)
                     .OrderBy(r => r.Type).ThenBy(r => r.Name.ToLower())
                     .ToList();
@@ -125,7 +250,7 @@ namespace Klepach.Core.VHDV.Client
             {
                 // search for text
                 InitListView();
-                dirRecords = db.FileSystemItems.AsNoTracking()
+                dirRecords = _db.FileSystemItems.AsNoTracking()
                     //.Join(db.Partitions, r => r.PartitionId, p => p.PartitionId (r, p) )
                     .Where(r => r.Name.ToLower().Contains(searchText) || r.Path.ToLower().Contains(searchText))
                     .OrderBy(r => r.Name.ToLower())
@@ -148,7 +273,7 @@ namespace Klepach.Core.VHDV.Client
 
                 if (dirRecord.Type == "dir")
                 {
-                    item.ImageKey = "folder";
+                    item.ImageKey = "folder-open";
                 }
                 else
                 {
@@ -238,7 +363,7 @@ namespace Klepach.Core.VHDV.Client
             if (cmbPartitions.SelectedItem == null)
                 return;
             tvFolder.Nodes.Clear();
-            var partition = ((VOVPartition)cmbPartitions.SelectedItem);
+            var partition = ((VHDVPartition)cmbPartitions.SelectedItem);
             _currentPartitionId = partition.Id;
             LoadLevel(null);
             if (viewType == "search")
@@ -289,7 +414,7 @@ namespace Klepach.Core.VHDV.Client
                 partitionId = partitionId.Substring(partitionId.LastIndexOf("-[") + 2);
                 partitionId = partitionId.Substring(0, partitionId.Length - 1);
 
-                foreach (VOVPartition cmbItem in cmbPartitions.Items)
+                foreach (VHDVPartition cmbItem in cmbPartitions.Items)
                 {
                     if (cmbItem.Id == int.Parse(partitionId))
                     {
@@ -365,6 +490,26 @@ namespace Klepach.Core.VHDV.Client
         {
             DoSearch();
         }
+        /// <summary>
+        /// Handles the Click event of the TsbOpenDatabase control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void tsbNewDatabase_Click(object sender, EventArgs e)
+        {
+            NewSQLiteDatabase();
+        }
+        /// <summary>
+        /// Handles the Click event of the tsbOpenDatabase control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void tsbOpenDatabase_Click(object sender, EventArgs e)
+        {
+            OpenSQLiteDatabase();
+        }
         #endregion
+
     }
 }

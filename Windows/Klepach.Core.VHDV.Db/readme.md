@@ -16,6 +16,7 @@ dotnet add package Microsoft.EntityFrameworkCore.Tools
 dotnet add package System.Management
 dotnet add package System.Configuration.ConfigurationManager
 
+
 ## list tools
 dotnet tool list
 dotnet tool list --global

@@ -38,17 +38,17 @@ namespace Klepach.Core.VHDV.Db
         /// </summary>
         /// <param name="driveLetter">The drive letter.</param>
         /// <returns></returns>
-        private VOVDisk SetDiskInfo(string driveLetter)
+        private VHDVDisk SetDiskInfo(string driveLetter)
         {
             var diskInfo = HardDriveInfo.GetPartitionDiskInfo(driveLetter);
 
             var volumeId = diskInfo.SerialNumber;
 
-            VOVDisk diskRecord = _db.Disks.AsNoTracking().Where(p => p.VolumeId == diskInfo.VolumeId).FirstOrDefault();
+            VHDVDisk diskRecord = _db.Disks.AsNoTracking().Where(p => p.VolumeId == diskInfo.VolumeId).FirstOrDefault();
             var newRecord = (diskRecord == null);
             if (newRecord)
             {
-                diskRecord = new VOVDisk();
+                diskRecord = new VHDVDisk();
                 diskRecord.VolumeId = volumeId;
             }
             diskRecord.Caption = diskInfo.Caption;
@@ -80,7 +80,7 @@ namespace Klepach.Core.VHDV.Db
         /// <param name="driveLetter">The drive letter.</param>
         /// <param name="diskId">The disk identifier.</param>
         /// <returns></returns>
-        private VOVPartition SetPartitionInfo(string driveLetter, int diskId)
+        private VHDVPartition SetPartitionInfo(string driveLetter, int diskId)
         {
             System.IO.DriveInfo di = new System.IO.DriveInfo($"{driveLetter}\\");
             Console.WriteLine($"drive: {di.VolumeLabel}, {di.DriveFormat}, {di.DriveType}, {di.TotalSize}, {di.TotalFreeSpace}");
@@ -88,11 +88,11 @@ namespace Klepach.Core.VHDV.Db
             var partitionInfo = HardDriveInfo.GetPartitionInfo(driveLetter);
             var partId = partitionInfo.VolumeSerialNumber;
 
-            VOVPartition partitionRecord = _db.Partitions.AsNoTracking().Where(p => p.PartitionId == partId).FirstOrDefault();
+            VHDVPartition partitionRecord = _db.Partitions.AsNoTracking().Where(p => p.PartitionId == partId).FirstOrDefault();
             var newRecord = (partitionRecord == null);
             if (newRecord)
             {
-                partitionRecord = new VOVPartition();
+                partitionRecord = new VHDVPartition();
                 partitionRecord.PartitionId = partId;
             }
             partitionRecord.DiskId = diskId;
@@ -161,11 +161,11 @@ namespace Klepach.Core.VHDV.Db
                     var dirPath = di.Parent.FullName.Substring(2);
                     Console.WriteLine($"file: {item}, {di.Extension}, {di.Attributes}, {di.CreationTime}, {di.LastAccessTime}, {di.LastWriteTime}");
 
-                    VOVFileSystemItem dirRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == dirPath && p.Name == di.Name).FirstOrDefault();
+                    VHDVFileSystemItem dirRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == dirPath && p.Name == di.Name).FirstOrDefault();
                     var newDir = (dirRecord == null);
                     if (newDir)
                     {
-                        dirRecord = new VOVFileSystemItem
+                        dirRecord = new VHDVFileSystemItem
                         {
                             PartitionId = partitionId,
                             Path = dirPath,
@@ -227,11 +227,11 @@ namespace Klepach.Core.VHDV.Db
                     // no output for files
                     //Console.WriteLine($"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}");
 
-                    VOVFileSystemItem fileRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == filePath && p.Name == fi.Name).FirstOrDefault();
+                    VHDVFileSystemItem fileRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == filePath && p.Name == fi.Name).FirstOrDefault();
                     var newFile = (fileRecord == null);
                     if (newFile)
                     {
-                        fileRecord = new VOVFileSystemItem
+                        fileRecord = new VHDVFileSystemItem
                         {
                             PartitionId = partitionId,
                             Path = filePath,

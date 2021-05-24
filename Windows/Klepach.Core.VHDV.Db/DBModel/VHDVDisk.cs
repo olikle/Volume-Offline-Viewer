@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace Klepach.Core.VHDV.Db
 {
     /// <summary>
-    /// VOVDisk
+    /// VHDVDisk
     /// </summary>
-    public class VOVDisk
+    public class VHDVDisk
     {
         public int Id { get; set; }
         public string Type { get; set; }
@@ -30,7 +30,7 @@ namespace Klepach.Core.VHDV.Db
         public long TracksPerCylinder { get; set; }
 
 
-        public IEnumerable<VOVPartition> Partitions { get; set; }
+        public IEnumerable<VHDVPartition> Partitions { get; set; }
 
         public override string ToString()
         {
