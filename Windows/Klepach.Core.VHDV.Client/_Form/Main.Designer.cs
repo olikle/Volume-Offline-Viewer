@@ -48,6 +48,8 @@ namespace Klepach.Core.VHDV.Client
             this.lvFolderAndFiles = new System.Windows.Forms.ListView();
             this.iconLargeImageList = new System.Windows.Forms.ImageList(this.components);
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.tsbScanPartition = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.statusStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -77,6 +79,8 @@ namespace Klepach.Core.VHDV.Client
             this.tsbOpenDatabase,
             this.tsbNewDatabase,
             this.toolStripSeparator1,
+            this.tsbScanPartition,
+            this.toolStripSeparator2,
             this.tsbInfo});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
@@ -236,6 +240,21 @@ namespace Klepach.Core.VHDV.Client
             // 
             this.openFileDialog.FileName = "openFileDialog1";
             // 
+            // tsbScanPartition
+            // 
+            this.tsbScanPartition.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.tsbScanPartition.Image = ((System.Drawing.Image)(resources.GetObject("tsbScanPartition.Image")));
+            this.tsbScanPartition.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsbScanPartition.Name = "tsbScanPartition";
+            this.tsbScanPartition.Size = new System.Drawing.Size(52, 52);
+            this.tsbScanPartition.Text = "Scan Partition";
+            this.tsbScanPartition.Click += new System.EventHandler(this.tsbScanPartition_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 55);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -282,6 +301,8 @@ namespace Klepach.Core.VHDV.Client
         private System.Windows.Forms.ToolStripButton tsbNewDatabase;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.ToolStripButton tsbScanPartition;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
     }
 }
 

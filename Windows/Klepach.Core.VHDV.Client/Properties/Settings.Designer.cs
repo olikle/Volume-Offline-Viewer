@@ -58,5 +58,17 @@ namespace Klepach.Core.VHDV.Client.Properties {
                 this["DatabasePath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FrmScanPartition_WindowSize {
+            get {
+                return ((string)(this["FrmScanPartition_WindowSize"]));
+            }
+            set {
+                this["FrmScanPartition_WindowSize"] = value;
+            }
+        }
     }
 }

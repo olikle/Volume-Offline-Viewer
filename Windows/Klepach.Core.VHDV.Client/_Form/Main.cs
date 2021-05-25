@@ -25,7 +25,7 @@ namespace Klepach.Core.VHDV.Client
         string viewType = "list";
         #endregion
 
-        #region Main
+        #region Constructor
         /// <summary>
         /// Initializes a new instance of the <see cref="Main"/> class.
         /// </summary>
@@ -508,6 +508,18 @@ namespace Klepach.Core.VHDV.Client
         private void tsbOpenDatabase_Click(object sender, EventArgs e)
         {
             OpenSQLiteDatabase();
+        }
+        private void tsbScanPartition_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                FrmScanPartition frmScanPartition = new FrmScanPartition();
+                frmScanPartition.db = _db;
+                frmScanPartition.ShowDialog();
+            }catch(Exception ex)
+            {
+                MessageBox.Show($"Error scanning drive:\n{ex.Message}", "Scanning drive", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         #endregion
 

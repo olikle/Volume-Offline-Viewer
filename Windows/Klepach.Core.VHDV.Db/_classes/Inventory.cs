@@ -13,25 +13,39 @@ namespace Klepach.Core.VHDV.Db
     /// </summary>
     public class Inventory
     {
+        #region variables
         AppDbContext _db;
+        bool _stopScan = false;
+        #endregion
 
+        #region constructor
         /// <summary>Initializes a new instance of the <see cref="Inventory" /> class.</summary>
         /// <param name="db">The database.</param>
         public Inventory(AppDbContext db)
         {
             _db = db;
         }
+        #endregion
 
+        #region ScanDrive, SetDiskInfo, SetPartitionInfo, ScanFilesAndFolders
         /// <summary>
         /// Scans the drive.
         /// </summary>
         /// <param name="driveLetter">The drive letter.</param>
         public void ScanDrive(string driveLetter)
         {
+            if (driveLetter.Contains(":")) driveLetter = driveLetter.Substring(0, driveLetter.IndexOf(":", StringComparison.OrdinalIgnoreCase)+1);
+            
+            _stopScan = false;
+
             var diskRecord = SetDiskInfo(driveLetter);
             var partitionRecord = SetPartitionInfo(driveLetter, diskRecord.Id);
             // scan the files
             ScanFilesAndFolders(driveLetter, partitionRecord.Id);
+        }
+        public void StopScan()
+        {
+            _stopScan = true;
         }
         /// <summary>
         /// Sets the disk information.
@@ -41,7 +55,10 @@ namespace Klepach.Core.VHDV.Db
         private VHDVDisk SetDiskInfo(string driveLetter)
         {
             var diskInfo = HardDriveInfo.GetPartitionDiskInfo(driveLetter);
-
+            if (diskInfo == null)
+            {
+                throw new System.IO.FileNotFoundException("Drive not found");
+            }
             var volumeId = diskInfo.SerialNumber;
 
             VHDVDisk diskRecord = _db.Disks.AsNoTracking().Where(p => p.VolumeId == diskInfo.VolumeId).FirstOrDefault();
@@ -136,10 +153,17 @@ namespace Klepach.Core.VHDV.Db
             //IEnumerable<string> items = Directory.EnumerateDirectories($"{_driveLetter}\\");
             //IEnumerable<string> items = Directory.EnumerateFileSystemEntries($"{_driveLetter}\\");
             */
+            if (_stopScan)
+                OnScanStatus(new ScanStatusEventArgs("break", $"Scan stopped for drive {driveLetter}", $"Scan stopped for drive {driveLetter}, Time: {stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds},{stopWatch.ElapsedMilliseconds}"));
+            else
+                OnScanStatus(new ScanStatusEventArgs("finish", $"Scan done for drive {driveLetter}", $"Scan done for drive {driveLetter}, Time: {stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds},{stopWatch.ElapsedMilliseconds}"));
 
             stopWatch.Stop();
             Console.WriteLine($"time: {stopWatch.Elapsed.Hours}:{stopWatch.Elapsed.Minutes}:{stopWatch.Elapsed.Seconds},{stopWatch.ElapsedMilliseconds}");
         }
+        #endregion
+
+        #region AddDirectories, AddFiles
         /// <summary>
         /// Adds the directories.
         /// </summary>
@@ -157,9 +181,13 @@ namespace Klepach.Core.VHDV.Db
             {
                 foreach (string item in items)
                 {
+                    // aboard scan
+                    if (_stopScan) break;
+
                     DirectoryInfo di = new DirectoryInfo(item);
                     var dirPath = di.Parent.FullName.Substring(2);
-                    Console.WriteLine($"file: {item}, {di.Extension}, {di.Attributes}, {di.CreationTime}, {di.LastAccessTime}, {di.LastWriteTime}");
+                    //Console.WriteLine($"dir: {item}, {di.Extension}, {di.Attributes}, {di.CreationTime}, {di.LastAccessTime}, {di.LastWriteTime}");
+                    OnScanStatus(new ScanStatusEventArgs("dir", $"{item}", $"dir: {item}, {di.Extension}, {di.Attributes}, {di.CreationTime}, {di.LastAccessTime}, {di.LastWriteTime}"));  ;
 
                     VHDVFileSystemItem dirRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == dirPath && p.Name == di.Name).FirstOrDefault();
                     var newDir = (dirRecord == null);
@@ -222,10 +250,14 @@ namespace Klepach.Core.VHDV.Db
                 Console.WriteLine("scan files...");
                 foreach (string item in items)
                 {
+                    // aboard scan
+                    if (_stopScan) break;
+
                     FileInfo fi = new FileInfo(item);
                     var filePath = fi.Directory.FullName.Substring(2);
                     // no output for files
-                    //Console.WriteLine($"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}");
+                    //OnScanStatus(new ScanStatusEventArgs($"file: {item}", $"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}"));
+                    //Console.WriteLine("file", $"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}");
 
                     VHDVFileSystemItem fileRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == filePath && p.Name == fi.Name).FirstOrDefault();
                     var newFile = (fileRecord == null);
@@ -256,7 +288,83 @@ namespace Klepach.Core.VHDV.Db
                 Console.WriteLine($"Error {Ex.Message}");
             }
         }
+        #endregion
 
+        #region Event Handler
+        /// <summary>
+        /// Occurs when [scan item].
+        /// </summary>
+        public event ScanStatusEventHandler ScanStatus;
+        /// <summary>
+        /// Raises the <see cref="E:ScanItem" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="ScanItemEventArgs" /> instance containing the event data.</param>
+        protected virtual void OnScanStatus(ScanStatusEventArgs e)
+        {
+            if (ScanStatus != null) ScanStatus(this, e);
+        }
+        #endregion
 
     }
+
+
+    #region ScanStatusEventArgs class
+    /// <summary>
+    /// ScanItemEventArgs
+    /// </summary>
+    /// <seealso cref="System.EventArgs" />
+    public class ScanStatusEventArgs : System.EventArgs
+    {
+        #region variables
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        public string Type { get; set; }
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        public string Status { get; set; }
+        /// <summary>
+        /// Gets or sets the long status.
+        /// </summary>
+        /// <value>
+        /// The long status.
+        /// </value>
+        public string LongStatus { get; set; }
+        #endregion
+
+        #region constructor
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScanStatusEventArgs"/> class.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="status">The status.</param>
+        /// <param name="longStatus">The long status.</param>
+        public ScanStatusEventArgs(string type, string status, string longStatus)
+        {
+            this.Type = type;
+            this.Status = status;
+            this.LongStatus = longStatus;
+        }
+        #endregion
+        // Provide one or more constructors, as well as fields and
+        // accessors for the arguments.
+    }
+    #endregion
+
+    #region ScanStatusEventHandler Declaration
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The <see cref="ScanItemEventArgs"/> instance containing the event data.</param>
+    public delegate void ScanStatusEventHandler(object sender, ScanStatusEventArgs e);
+    #endregion
+
 }
