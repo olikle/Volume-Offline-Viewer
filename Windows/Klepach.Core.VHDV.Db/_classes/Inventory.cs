@@ -88,6 +88,7 @@ namespace Klepach.Core.VHDV.Db
             else
                 _db.Disks.Update(diskRecord);
             _db.SaveChanges();
+            _db.Entry<VHDVDisk>(diskRecord).State = EntityState.Detached;
 
             return diskRecord;
         }
@@ -110,8 +111,8 @@ namespace Klepach.Core.VHDV.Db
             if (newRecord)
             {
                 partitionRecord = new VHDVPartition();
-                partitionRecord.PartitionId = partId;
             }
+            partitionRecord.PartitionId = partId;
             partitionRecord.DiskId = diskId;
             partitionRecord.Caption = partitionInfo.Caption;
             partitionRecord.Description = partitionInfo.Description;
@@ -133,6 +134,7 @@ namespace Klepach.Core.VHDV.Db
             else
                 _db.Partitions.Update(partitionRecord);
             _db.SaveChanges();
+            _db.Entry<VHDVPartition>(partitionRecord).State = EntityState.Detached;
             return partitionRecord;
         }
         /// <summary>
@@ -173,7 +175,7 @@ namespace Klepach.Core.VHDV.Db
         {
             dirLevel++;
             
-            //if (dirLevel > 3) return;
+            if (dirLevel > 2) return;
 
             var driveLetter = path.Substring(0, 1);
             var items = Directory.EnumerateDirectories($"{path}", "*.*", SearchOption.TopDirectoryOnly);
@@ -222,9 +224,14 @@ namespace Klepach.Core.VHDV.Db
                     }
 
                     if (newDir)
+                    {
                         _db.FileSystemItems.Add(dirRecord);
+                    }
                     else
+                    {
                         _db.FileSystemItems.Update(dirRecord);
+                        _db.Entry<VHDVFileSystemItem>(dirRecord).State = EntityState.Detached;
+                    }
                 }
                 // add files from root
                 if (path.Substring(2) == "\\")
@@ -233,6 +240,7 @@ namespace Klepach.Core.VHDV.Db
             catch (Exception Ex)
             {
                 Console.WriteLine($"Error {Ex.Message}");
+                throw;
             }
         }
         /// <summary>
@@ -278,9 +286,14 @@ namespace Klepach.Core.VHDV.Db
                     fileRecord.LastModifiered = fi.LastWriteTimeUtc;
                     fileRecord.Size = fi.Length;
                     if (newFile)
+                    {
                         _db.FileSystemItems.Add(fileRecord);
+                    }
                     else
+                    {
                         _db.FileSystemItems.Update(fileRecord);
+                        _db.Entry<VHDVFileSystemItem>(fileRecord).State = EntityState.Detached;
+                    }
                 }
             }
             catch (Exception Ex)

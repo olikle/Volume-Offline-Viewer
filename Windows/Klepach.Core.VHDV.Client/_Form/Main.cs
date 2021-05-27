@@ -23,6 +23,7 @@ namespace Klepach.Core.VHDV.Client
         VhdvDbType _dbType;
         int _currentPartitionId = -1;
         string viewType = "list";
+        List<string> logList;
         #endregion
 
         #region Constructor
@@ -152,6 +153,7 @@ namespace Klepach.Core.VHDV.Client
         private void OpenDatabaseConnection()
         {
             _db = new AppDbContext(_databasePath, _dbType);
+            _db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
             this.Text = $"Volume Offline Viewer - {_databasePath}";
             EnDisable(true);
@@ -201,7 +203,7 @@ namespace Klepach.Core.VHDV.Client
             {
                 TreeNode treeNode = new TreeNode();
                 treeNode.Text = dirRecord.Name;
-                treeNode.Tag = $"{dirRecord.Path}\\{dirRecord.Name}-[{dirRecord.PartitionId}]";
+                treeNode.Tag = $"{(dirRecord.Path != "\\" ? dirRecord.Path : "")}\\{dirRecord.Name}-[{dirRecord.PartitionId}]";
 
                 treeNode.ImageKey = "folder-open";
                 treeNode.SelectedImageKey = "folder-open";
@@ -278,9 +280,10 @@ namespace Klepach.Core.VHDV.Client
                 else
                 {
                     item.ImageKey = "document";
-                    itemType = Path.GetExtension(dirRecord.Name).Substring(1);
+                    if (!string.IsNullOrEmpty(Path.GetExtension(dirRecord.Name)))
+                        itemType = Path.GetExtension(dirRecord.Name).Substring(1);
                 }
-                item.Tag = $"{dirRecord.Path}\\{dirRecord.Name}-[{dirRecord.PartitionId}]";
+                item.Tag = $"{(dirRecord.Path != "\\" ? dirRecord.Path : "")}\\{dirRecord.Name}-[{dirRecord.PartitionId}]";
                 if (viewType == "list")
                 {
                     subItems = new ListViewItem.ListViewSubItem[]
@@ -408,6 +411,9 @@ namespace Klepach.Core.VHDV.Client
             if (clickedItem == null)
                 return;
 
+            var type = clickedItem.SubItems["Type"].Text;
+            var openFolderPath = clickedItem.Tag.ToString();
+
             if (viewType == "search")
             {
                 var partitionId = clickedItem.Tag.ToString();
@@ -422,28 +428,45 @@ namespace Klepach.Core.VHDV.Client
                         break;
                     }
                 }
+
+                if (type != "dir") openFolderPath = Path.GetDirectoryName(openFolderPath) + "-[" + partitionId.ToString() +"]";
+            }
+            else
+            {
+                if (type != "dir") return;
             }
 
-                var type = clickedItem.SubItems["Type"].Text;
-            if (type != "dir") return;
+            openFolderPath = openFolderPath.Substring(0, openFolderPath.IndexOf("-["));
 
-            //var foundNodes = tvFolder.Nodes.Find(clickedItem.Tag.ToString(), true);
-            //if (foundNodes == null || foundNodes.Length == 0)
-            //    return;
-            //var foundNode = foundNodes[0];
-
-            var foundNode = GetNode(clickedItem.Tag, null);
-            if (foundNode == null)
-               return;
-
-            foundNode.Expand();
-
-            foreach (TreeNode subTreeNode in foundNode.Nodes)
-                LoadLevel(subTreeNode);
+            // find the Node in the Tree an expand
+            TreeNode foundNode = null;
+            TreeNodeCollection treeNodes = tvFolder.Nodes;
+            var folderPaths = openFolderPath.Split("\\");
+            string pathToFind = "";
+            TreeNode[] foundNodes;
+            
+            for (var xi = 0; xi < folderPaths.Length; xi++)
+            {
+                logList.Add(folderPaths[xi]);
+                if (string.IsNullOrEmpty(folderPaths[xi])) continue;
+                pathToFind += "\\" + folderPaths[xi];
+                foundNodes = treeNodes.Find(pathToFind, false);
+                if (foundNodes.Length == 0)
+                    break;
+                foundNode = foundNodes[0];
+                if (foundNode.Nodes.Count == 0)
+                {
+                    LoadLevel(foundNode);
+                }
+                foundNode.Expand();
+                treeNodes = foundNode.Nodes;
+            }
 
             if (viewType == "search")
                 return;
 
+            foreach (TreeNode subTreeNode in foundNode.Nodes)
+                LoadLevel(subTreeNode);
             LoadCurrentLevel(foundNode, null);
         }
         /// <summary>
@@ -452,7 +475,7 @@ namespace Klepach.Core.VHDV.Client
         /// <param name="tag">The tag.</param>
         /// <param name="rootNode">The root node.</param>
         /// <returns></returns>
-        public TreeNode GetNode(object tag, TreeNode rootNode)
+        public TreeNode GetNode(string tag, TreeNode rootNode)
         {
             TreeNodeCollection nodes;
             if (rootNode == null)
@@ -461,7 +484,9 @@ namespace Klepach.Core.VHDV.Client
                 nodes = rootNode.Nodes;
             foreach (TreeNode node in nodes)
             {
-                if (node.Tag.Equals(tag)) return node;
+                logList.Add(node.Tag.ToString());
+
+                if (node.Tag.ToString().Equals(tag)) return node;
 
                 //recursion
                 var next = GetNode(tag, node);
@@ -509,6 +534,11 @@ namespace Klepach.Core.VHDV.Client
         {
             OpenSQLiteDatabase();
         }
+        /// <summary>
+        /// Handles the Click event of the tsbScanPartition control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void tsbScanPartition_Click(object sender, EventArgs e)
         {
             try
@@ -516,7 +546,11 @@ namespace Klepach.Core.VHDV.Client
                 FrmScanPartition frmScanPartition = new FrmScanPartition();
                 frmScanPartition.db = _db;
                 frmScanPartition.ShowDialog();
-            }catch(Exception ex)
+                LoadPartitionsList();
+                tvFolder.Nodes.Clear();
+                lvFolderAndFiles.Items.Clear();
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show($"Error scanning drive:\n{ex.Message}", "Scanning drive", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

@@ -29,7 +29,7 @@ namespace Klepach.Core.VHDV.Db
 
         public override string ToString()
         {
-            return $"{Path}/{Name} ({Id})";
+            return $"{(Path != "/" ? Path : "")}/{Name} ({Id})";
         }
     }
 }
