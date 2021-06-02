@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xrml="urn:mpeg:mpeg21:2003:01-REL-R-NS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
-  <assemblyIdentity name="Klepach.Core.VHDV.Client.application" version="1.0.0.0" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" xmlns="urn:schemas-microsoft-com:asm.v1" />
-  <description asmv2:publisher="Klepach.Core.VHDV.Client" asmv2:product="Klepach.Core.VHDV.Client" xmlns="urn:schemas-microsoft-com:asm.v1" />
-  <deployment install="true" mapFileExtensions="true">
+  <assemblyIdentity name="Klepach.Core.VHDV.Client.application" version="1.0.0.1" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" xmlns="urn:schemas-microsoft-com:asm.v1" />
+  <description asmv2:publisher="Oliver Klepach" co.v1:suiteName="Volume-Offline-Viewer" asmv2:product="Volume-Offline-Viewer - Windows Client" asmv2:supportUrl="https://olikle.github.io/Volume-Offline-Viewer/" xmlns="urn:schemas-microsoft-com:asm.v1" />
+  <deployment install="true" mapFileExtensions="true" co.v1:createDesktopShortcut="true">
     <subscription>
       <update>
         <beforeApplicationStartup />
@@ -14,14 +14,14 @@
     <framework targetVersion="4.5" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="Application Files\Klepach.Core.VHDV.Client_1_0_0_0\Klepach.Core.VHDV.Client.dll.manifest" size="20627">
-      <assemblyIdentity name="Klepach.Core.VHDV.Client.exe" version="1.0.0.0" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
+    <dependentAssembly dependencyType="install" codebase="Application Files\Klepach.Core.VHDV.Client_1_0_0_1\Klepach.Core.VHDV.Client.dll.manifest" size="20627">
+      <assemblyIdentity name="Klepach.Core.VHDV.Client.exe" version="1.0.0.1" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>68H5358/FFi9wj6FxBJ4d2DfzNMPRECy20Mv4I5TiE8=</dsig:DigestValue>
+        <dsig:DigestValue>LXkYWDIiUzMWwmEjTFftxA+4jhH23oLwpidzh3GU1tE=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
