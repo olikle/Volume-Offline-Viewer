@@ -41,7 +41,7 @@ namespace Klepach.Core.VHDV.Client
         private void FrmScanPartition_Load(object sender, EventArgs e)
         {
             CommonFunctions.SettingWindowSizeLoad(this);
-            EnDisable(true);
+            EnDisable(false, true);
 
             bool isSelected = false;
             string volumeLabel;
@@ -64,6 +64,7 @@ namespace Klepach.Core.VHDV.Client
                     if (!isSelected && drive.DriveType == DriveType.Fixed)
                     {
                         isSelected = true;
+                        EnDisable(true, false);
                         cmbPartitions.SelectedIndex = selectedIndex;
                     }
                 }
@@ -86,11 +87,19 @@ namespace Klepach.Core.VHDV.Client
         /// Ens the disable.
         /// </summary>
         /// <param name="enable">if set to <c>true</c> [enable].</param>
-        private void EnDisable(bool enable)
+        private void EnDisable(bool enable, bool eraseData )
         {
             cmbPartitions.Enabled = enable;
             tsbStartScan.Visible = enable;
             tsbStopScan.Visible = !enable;
+            if (eraseData)
+            {
+                lblSerialNo.Text = "";
+                lblVolumeName.Text = "";
+                lblDescription.Text = "";
+                lblFileSystem.Text = "";
+                lblFoundInDb.Text = "";
+            }
         }
         #endregion
 
@@ -103,6 +112,27 @@ namespace Klepach.Core.VHDV.Client
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void cmbPartitions_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (cmbPartitions.SelectedItem == null)
+                return;
+
+            EnDisable(true, true);
+            var scanDrive = cmbPartitions.SelectedItem.ToString();
+            scanDrive = scanDrive.Substring(0, scanDrive.IndexOf("(", StringComparison.OrdinalIgnoreCase));
+
+            var partInfo = HardDriveInfo.GetPartitionInfo(scanDrive);
+            if (partInfo != null)
+            {
+                lblSerialNo.Text = partInfo.VolumeSerialNumber;
+                lblVolumeName.Text = partInfo.VolumeName;
+                lblDescription.Text = partInfo.Description;
+                lblFileSystem.Text = partInfo.FileSystem;
+            }
+            _inventory = new Inventory(db);
+            if (_inventory.FindPartition(partInfo.VolumeSerialNumber))
+            {
+                lblFoundInDb.Text = "Partition found in Database.";
+            }
+            _inventory = null;
         }
         /// <summary>
         /// Handles the Click event of the tsbStartScan control.
@@ -113,7 +143,15 @@ namespace Klepach.Core.VHDV.Client
         {
             if (cmbPartitions.SelectedItem == null)
                 return;
-            EnDisable(false);
+
+            if (!string.IsNullOrEmpty(lblFoundInDb.Text))
+            {
+                var dialogResult = MessageBox.Show("Partition allready in Database!\nExisting Data will be deleted.\n\nContinue?", "Start Scan", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                if (dialogResult == DialogResult.No)
+                    return;
+            }
+
+            EnDisable(false, false);
 
             var scanDrive = cmbPartitions.SelectedItem.ToString();
             scanDrive = scanDrive.Substring(0, scanDrive.IndexOf("(", StringComparison.OrdinalIgnoreCase));
@@ -122,7 +160,8 @@ namespace Klepach.Core.VHDV.Client
             _inventory.ScanDrive(scanDrive);
             _inventory = null;
             
-            EnDisable(true);
+            EnDisable(true, false);
+            lblFoundInDb.Text = "Partition now in Database.";
         }
         /// <summary>
         /// Handles the Click event of the tsbStopScan control.
@@ -132,7 +171,7 @@ namespace Klepach.Core.VHDV.Client
         private void tsbStopScan_Click(object sender, EventArgs e)
         {
             _inventory.StopScan();
-            EnDisable(false);
+            EnDisable(false, false);
         }
 
         /// <summary>
@@ -142,7 +181,10 @@ namespace Klepach.Core.VHDV.Client
         /// <param name="e">The <see cref="ScanStatusEventArgs"/> instance containing the event data.</param>
         private void Inventory_ScanStatus(object sender, ScanStatusEventArgs e)
         {
-            statusStrip.Items[0].Text = e.Status + " ...";
+            if (e.Type == "finish" || e.Type == "break")
+                statusStrip.Items[0].Text = e.Status;
+            else
+                statusStrip.Items[0].Text = e.Status + " ...";
             Application.DoEvents();
         }
         #endregion

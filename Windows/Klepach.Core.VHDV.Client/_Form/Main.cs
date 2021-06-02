@@ -23,7 +23,6 @@ namespace Klepach.Core.VHDV.Client
         VhdvDbType _dbType;
         int _currentPartitionId = -1;
         string viewType = "list";
-        List<string> logList;
         #endregion
 
         #region Constructor
@@ -190,6 +189,9 @@ namespace Klepach.Core.VHDV.Client
         /// <param name="selectedNode">The selected node.</param>
         private void LoadLevel(TreeNode selectedNode)
         {
+            if (selectedNode != null && selectedNode.Nodes.Count != 0)
+                return;
+
             var path = "\\";
             if (selectedNode != null)
                 path = selectedNode.Name;
@@ -447,7 +449,6 @@ namespace Klepach.Core.VHDV.Client
             
             for (var xi = 0; xi < folderPaths.Length; xi++)
             {
-                logList.Add(folderPaths[xi]);
                 if (string.IsNullOrEmpty(folderPaths[xi])) continue;
                 pathToFind += "\\" + folderPaths[xi];
                 foundNodes = treeNodes.Find(pathToFind, false);
@@ -457,6 +458,7 @@ namespace Klepach.Core.VHDV.Client
                 if (foundNode.Nodes.Count == 0)
                 {
                     LoadLevel(foundNode);
+                    tvFolder.SelectedNode = foundNode;
                 }
                 foundNode.Expand();
                 treeNodes = foundNode.Nodes;
@@ -484,8 +486,6 @@ namespace Klepach.Core.VHDV.Client
                 nodes = rootNode.Nodes;
             foreach (TreeNode node in nodes)
             {
-                logList.Add(node.Tag.ToString());
-
                 if (node.Tag.ToString().Equals(tag)) return node;
 
                 //recursion

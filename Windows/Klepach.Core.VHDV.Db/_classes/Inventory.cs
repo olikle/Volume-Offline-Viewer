@@ -27,6 +27,19 @@ namespace Klepach.Core.VHDV.Db
         }
         #endregion
 
+        #region FindPartition
+        /// <summary>
+        /// Finds the partition.
+        /// </summary>
+        /// <param name="volumeSerialNumber">The volume serial number.</param>
+        /// <returns></returns>
+        public bool FindPartition(string volumeSerialNumber)
+        {
+            VHDVPartition partitionRecord = _db.Partitions.AsNoTracking().Where(p => p.PartitionId == volumeSerialNumber).FirstOrDefault();
+            return (partitionRecord != null);
+        }
+        #endregion
+
         #region ScanDrive, SetDiskInfo, SetPartitionInfo, ScanFilesAndFolders
         /// <summary>
         /// Scans the drive.
@@ -43,6 +56,9 @@ namespace Klepach.Core.VHDV.Db
             // scan the files
             ScanFilesAndFolders(driveLetter, partitionRecord.Id);
         }
+        /// <summary>
+        /// Stops the scan.
+        /// </summary>
         public void StopScan()
         {
             _stopScan = true;
@@ -145,6 +161,7 @@ namespace Klepach.Core.VHDV.Db
         {
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
+            _db.Database.ExecuteSqlRaw("DELETE FROM [FileSystemItems] WHERE PartitionId = " + partitionId);
 
             int dirLevel = 0;
             AddDirectories(driveLetter + "\\", partitionId, dirLevel);
@@ -175,7 +192,7 @@ namespace Klepach.Core.VHDV.Db
         {
             dirLevel++;
             
-            if (dirLevel > 2) return;
+            //if (dirLevel > 2) return;
 
             var driveLetter = path.Substring(0, 1);
             var items = Directory.EnumerateDirectories($"{path}", "*.*", SearchOption.TopDirectoryOnly);
@@ -189,7 +206,7 @@ namespace Klepach.Core.VHDV.Db
                     DirectoryInfo di = new DirectoryInfo(item);
                     var dirPath = di.Parent.FullName.Substring(2);
                     //Console.WriteLine($"dir: {item}, {di.Extension}, {di.Attributes}, {di.CreationTime}, {di.LastAccessTime}, {di.LastWriteTime}");
-                    OnScanStatus(new ScanStatusEventArgs("dir", $"{item}", $"dir: {item}, {di.Extension}, {di.Attributes}, {di.CreationTime}, {di.LastAccessTime}, {di.LastWriteTime}"));  ;
+                    OnScanStatus(new ScanStatusEventArgs("dir", $"{item}", $"dir: {item}, {di.Extension}, {di.Attributes}, {di.CreationTime}, {di.LastAccessTime}, {di.LastWriteTime}"));
 
                     VHDVFileSystemItem dirRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == dirPath && p.Name == di.Name).FirstOrDefault();
                     var newDir = (dirRecord == null);
@@ -255,6 +272,7 @@ namespace Klepach.Core.VHDV.Db
             //IEnumerable<string> items = Directory.EnumerateFiles($"{driveLetter}\\", "*.*", SearchOption.TopDirectoryOnly);
             try
             {
+                int count = 0;
                 Console.WriteLine("scan files...");
                 foreach (string item in items)
                 {
@@ -264,7 +282,12 @@ namespace Klepach.Core.VHDV.Db
                     FileInfo fi = new FileInfo(item);
                     var filePath = fi.Directory.FullName.Substring(2);
                     // no output for files
-                    //OnScanStatus(new ScanStatusEventArgs($"file: {item}", $"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}"));
+                    count++;
+                    if (count == 40)
+                    {
+                        OnScanStatus(new ScanStatusEventArgs("file", $"{item}", $"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}"));
+                        count = 0;
+                    }
                     //Console.WriteLine("file", $"file: {item}, {fi.Extension}, {fi.Length}, {fi.Attributes}, {fi.CreationTime}, {fi.IsReadOnly}, {fi.LastAccessTime}, {fi.LastWriteTime}");
 
                     VHDVFileSystemItem fileRecord = _db.FileSystemItems.AsNoTracking().Where(p => p.PartitionId == partitionId && p.Path == filePath && p.Name == fi.Name).FirstOrDefault();

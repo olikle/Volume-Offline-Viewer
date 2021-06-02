@@ -5,10 +5,12 @@ using System.Management;
 
 namespace Klepach.Core.VHDV.Db
 {
-    class HardDriveInfo
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class HardDriveInfo
     {
         #region PartitionInfo
-
         /// <summary>
         /// Gets the partition information.
         /// </summary>
@@ -16,6 +18,8 @@ namespace Klepach.Core.VHDV.Db
         /// <returns></returns>
         public static Partition GetPartitionInfo(string driveLetter)
         {
+            if (driveLetter.Contains(":")) driveLetter = driveLetter.Substring(0, driveLetter.IndexOf(":", StringComparison.OrdinalIgnoreCase) + 1);
+
             Partition returnPartition = new Partition();
             //Create our ManagementObject, passing it the drive letter to the
             //DevideID using WQL
@@ -306,7 +310,7 @@ VolumeSerialNumber = 30A2032B
     /// <summary>
     /// Partition Object
     /// </summary>
-    class Partition
+    public class Partition
     {
         public int Id { get; set; }
         public Dictionary<string, object> RawRroperties { get; set; }
@@ -366,7 +370,7 @@ VolumeName =
 VolumeSerialNumber = 30A2032B            
          */
     }
-    class Disk
+    public class Disk
     {
         public int Id { get; set; }
         public string Type { get; set; }
