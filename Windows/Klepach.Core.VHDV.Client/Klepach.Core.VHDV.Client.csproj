@@ -6,6 +6,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Properties\Klepach.Aceware.snk</AssemblyOriginatorKeyFile>
+    <Authors>Oliver Klepach</Authors>
+    <Product>Volume-Offline-Viewer</Product>
+    <Copyright>(c) 2021 Oliver Klepach</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

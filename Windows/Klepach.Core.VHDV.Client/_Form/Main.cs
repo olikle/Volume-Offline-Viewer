@@ -166,6 +166,7 @@ namespace Klepach.Core.VHDV.Client
         private void EnDisable(bool enable)
         {
             tsbInfo.Enabled = enable;
+            tsbScanPartition.Enabled = enable;
             cmbPartitions.Enabled = enable;
             tvFolder.Enabled = enable;
             lvFolderAndFiles.Enabled = enable;

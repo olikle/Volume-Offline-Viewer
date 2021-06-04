@@ -4,6 +4,9 @@
     <TargetFramework>net5.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Properties\Klepach.Aceware.snk</AssemblyOriginatorKeyFile>
+    <Product>Volume-Offline-Viewer</Product>
+    <Authors>Oliver Klepach</Authors>
+    <Copyright>(c) 2021 Oliver Klepach</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
