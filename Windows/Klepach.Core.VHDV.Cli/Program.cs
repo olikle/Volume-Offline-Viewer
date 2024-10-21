@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using System.IO;
+using static Klepach.Core.VHDV.Db.AppDbContext;
 
 namespace Klepach.Core.VHDV.Cli
 {
